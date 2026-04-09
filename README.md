@@ -4,7 +4,7 @@
 
 > The avatar library that Boring Avatars never became.
 
-[**Live Demo →**](https://void-avatars.dev)
+[**Live Demo →**](https://void-avatars.vercel.app)
 
 ---
 
@@ -125,7 +125,7 @@ The npm package is MIT — free for personal and open-source use.
 
 For **commercial use** (SaaS, client projects, closed-source apps), a one-time commercial license is available.
 
-[**Get a commercial license →**](https://void-avatars.dev#license)
+[**Get a commercial license →**](https://void-avatars.vercel.app#license)
 
 ---
 
