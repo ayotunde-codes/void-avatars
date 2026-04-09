@@ -1,0 +1,59 @@
+{
+  "name": "void-avatars",
+  "version": "0.1.0",
+  "description": "Premium generative SVG avatars — 12 styles, 6 moods, 3 animations. ID-collision-free, framework-agnostic.",
+  "keywords": ["avatar", "generative", "svg", "react", "identity", "avatars", "animated", "boring-avatars"],
+  "author": "ayotunde obasa",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ayothedev/void-avatars"
+  },
+  "homepage": "https://void-avatars.dev",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./styles/marble":        { "types": "./dist/styles/marble.d.ts",        "import": "./dist/styles/marble.js",        "require": "./dist/styles/marble.cjs" },
+    "./styles/beam":          { "types": "./dist/styles/beam.d.ts",          "import": "./dist/styles/beam.js",          "require": "./dist/styles/beam.cjs" },
+    "./styles/bauhaus":       { "types": "./dist/styles/bauhaus.d.ts",       "import": "./dist/styles/bauhaus.js",       "require": "./dist/styles/bauhaus.cjs" },
+    "./styles/pixel":         { "types": "./dist/styles/pixel.d.ts",         "import": "./dist/styles/pixel.js",         "require": "./dist/styles/pixel.cjs" },
+    "./styles/ring":          { "types": "./dist/styles/ring.d.ts",          "import": "./dist/styles/ring.js",          "require": "./dist/styles/ring.cjs" },
+    "./styles/glitch":        { "types": "./dist/styles/glitch.d.ts",        "import": "./dist/styles/glitch.js",        "require": "./dist/styles/glitch.cjs" },
+    "./styles/constellation": { "types": "./dist/styles/constellation.d.ts", "import": "./dist/styles/constellation.js", "require": "./dist/styles/constellation.cjs" },
+    "./styles/emoticon":      { "types": "./dist/styles/emoticon.d.ts",      "import": "./dist/styles/emoticon.js",      "require": "./dist/styles/emoticon.cjs" },
+    "./styles/nebula":        { "types": "./dist/styles/nebula.d.ts",        "import": "./dist/styles/nebula.js",        "require": "./dist/styles/nebula.cjs" },
+    "./styles/wireframe":     { "types": "./dist/styles/wireframe.d.ts",     "import": "./dist/styles/wireframe.js",     "require": "./dist/styles/wireframe.cjs" },
+    "./styles/halftone":      { "types": "./dist/styles/halftone.d.ts",      "import": "./dist/styles/halftone.js",      "require": "./dist/styles/halftone.cjs" },
+    "./styles/isometric":     { "types": "./dist/styles/isometric.d.ts",     "import": "./dist/styles/isometric.js",     "require": "./dist/styles/isometric.cjs" }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.0"
+  },
+  "peerDependencies": {
+    "react": ">=17"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true }
+  }
+}

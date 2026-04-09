@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Void Avatars — Premium Generative SVG Avatars</title>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <style>
+    :root {
+      --bg: #0e0e0e; --surface: #1a1a1a; --border: #2a2a2a;
+      --lime: #ccff00; --pink: #ff007a; --violet: #8a2be2; --cyan: #00d4ff;
+      --text: #f0f0f0; --muted: #888;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: "Inter", system-ui, sans-serif; min-height: 100vh; }
+
+    header { border-bottom: 1px solid var(--border); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+    .logo span { color: var(--lime); }
+    .badge { background: var(--lime); color: #000; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+
+    .controls { display: flex; flex-wrap: wrap; gap: 1rem; padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); align-items: flex-end; }
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    input[type="text"], select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.9rem; outline: none; min-width: 160px; }
+    input[type="text"]:focus, select:focus { border-color: var(--lime); }
+    input[type="range"] { width: 110px; accent-color: var(--lime); }
+    .size-val { font-size: 0.75rem; color: var(--muted); }
+
+    .btn { background: var(--lime); color: #000; border: none; padding: 0.55rem 1.2rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--lime); color: var(--lime); opacity: 1; }
+
+    .tab-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .tab { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.15s; white-space: nowrap; }
+    .tab:hover { border-color: var(--lime); color: var(--lime); }
+    .tab.active { border-color: var(--lime); color: var(--lime); background: color-mix(in srgb, var(--lime) 10%, var(--surface)); }
+    .tab.mood-tab:hover, .tab.mood-tab.active { border-color: var(--pink); color: var(--pink); background: color-mix(in srgb, var(--pink) 10%, var(--surface)); }
+    .tab.anim-tab:hover, .tab.anim-tab.active { border-color: var(--violet); color: var(--violet); background: color-mix(in srgb, var(--violet) 10%, var(--surface)); }
+
+    main { padding: 2rem; }
+    .section-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+    .section-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; margin-top: -0.5rem; line-height: 1.5; }
+
+    .grid { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 3rem; }
+    .avatar-card { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; transition: transform 0.2s; }
+    .avatar-card:hover { transform: translateY(-3px); }
+    .avatar-card .seed-label { font-size: 0.64rem; color: var(--muted); max-width: 90px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .avatar-card .sub-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .sub-label.mood-l { color: var(--pink); }
+    .sub-label.anim-l { color: var(--violet); }
+    .sub-label.style-l { color: var(--cyan); }
+    .group-label { width: 100%; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; margin-top: 1rem; margin-bottom: -0.25rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); }
+    .group-label.style-gl { color: var(--violet); }
+    .group-label.mood-gl  { color: var(--pink); }
+    .group-label.anim-gl  { color: var(--cyan); }
+
+    .preview-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-bottom: 3rem; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
+    .preview-meta { display: flex; flex-direction: column; gap: 0.75rem; flex: 1; min-width: 260px; }
+    .preview-seed { font-size: 1.1rem; font-weight: 700; }
+    .preview-sub { font-size: 0.78rem; color: var(--muted); }
+    code { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; font-family: "Fira Code", monospace; font-size: 0.75rem; color: var(--lime); white-space: pre-wrap; word-break: break-all; display: block; }
+    .mood-pill { display: inline-flex; align-items: center; gap: 0.3rem; background: color-mix(in srgb, var(--pink) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--pink) 30%, transparent); color: var(--pink); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
+    .anim-pill { display: inline-flex; align-items: center; gap: 0.3rem; background: color-mix(in srgb, var(--violet) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--violet) 30%, transparent); color: var(--violet); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
+
+    /* ── GSAP Showcase ── */
+    .gsap-section { margin-bottom: 3rem; }
+    .gsap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+    .gsap-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.2rem; transition: border-color 0.2s; }
+    .gsap-card:hover { border-color: color-mix(in srgb, var(--lime) 40%, var(--border)); }
+    .gsap-card.cyan-hover:hover { border-color: color-mix(in srgb, var(--cyan) 40%, var(--border)); }
+    .gsap-card.pink-hover:hover { border-color: color-mix(in srgb, var(--pink) 40%, var(--border)); }
+    .gsap-card.violet-hover:hover { border-color: color-mix(in srgb, var(--violet) 40%, var(--border)); }
+    .gsap-card-title { font-size: 0.85rem; font-weight: 700; }
+    .gsap-card-type { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .gsap-card-hint { font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.4; }
+    .gsap-card-info { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+    .gsap-avatar-wrap { cursor: pointer; user-select: none; }
+    .gsap-avatar-wrap svg { display: block; }
+    .type-lime   { color: var(--lime); }
+    .type-cyan   { color: var(--cyan); }
+    .type-pink   { color: var(--pink); }
+    .type-violet { color: var(--violet); }
+
+    .api-section { max-width: 720px; margin-bottom: 3rem; }
+    .api-section h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+    .api-row { display: flex; gap: 1rem; align-items: baseline; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.83rem; }
+    .api-param { color: var(--lime); font-family: monospace; min-width: 90px; }
+    .api-type { color: var(--violet); font-family: monospace; min-width: 80px; }
+    .api-desc { color: var(--muted); }
+
+    footer { border-top: 1px solid var(--border); padding: 1.5rem 2rem; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+    a { color: var(--lime); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--lime); color: #000; font-weight: 700; font-size: 0.85rem; padding: 0.6rem 1.2rem; border-radius: 8px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 999; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:0.75rem">
+    <div class="logo"><span>VOID</span> AVATARS</div>
+    <div class="badge">Beta</div>
+  </div>
+  <div style="display:flex;gap:0.75rem;align-items:center">
+    <span style="font-size:0.8rem;color:var(--muted)">Premium generative SVG avatars</span>
+    <a href="#api" class="btn btn-ghost" style="font-size:0.8rem;padding:0.4rem 0.9rem">API Docs</a>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Seed</label>
+    <input type="text" id="seedInput" value="hello world" placeholder="Any string…"/>
+  </div>
+  <div class="control-group">
+    <label>Style</label>
+    <div class="tab-row" id="styleTabs">
+      <button class="tab active" data-style="auto">Auto</button>
+      <button class="tab" data-style="marble">Marble</button>
+      <button class="tab" data-style="beam">Beam</button>
+      <button class="tab" data-style="bauhaus">Bauhaus</button>
+      <button class="tab" data-style="pixel">Pixel</button>
+      <button class="tab" data-style="ring">Ring</button>
+      <button class="tab" data-style="glitch">Glitch</button>
+      <button class="tab" data-style="constellation">Constellation</button>
+      <button class="tab" data-style="emoticon">Emoticon</button>
+      <button class="tab" data-style="nebula">Nebula</button>
+      <button class="tab" data-style="wireframe">Wireframe</button>
+      <button class="tab" data-style="halftone">Halftone</button>
+      <button class="tab" data-style="isometric">Isometric</button>
+      <button class="tab" data-style="spectrum">Spectrum</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <label>Size <span class="size-val" id="sizeVal">80px</span></label>
+    <input type="range" id="sizeRange" min="32" max="200" value="80"/>
+  </div>
+  <div class="control-group">
+    <label>Shape</label>
+    <select id="radiusSelect">
+      <option value="0">Square</option>
+      <option value="0.15">Rounded</option>
+      <option value="0.22" selected>Soft</option>
+      <option value="0.5">Circle</option>
+    </select>
+  </div>
+  <button class="btn" id="randomBtn">Randomize</button>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label style="color:var(--pink)">Mood</label>
+    <div class="tab-row" id="moodTabs">
+      <button class="tab mood-tab active" data-mood="none">None</button>
+      <button class="tab mood-tab" data-mood="happy">Happy</button>
+      <button class="tab mood-tab" data-mood="sad">Sad</button>
+      <button class="tab mood-tab" data-mood="angry">Angry</button>
+      <button class="tab mood-tab" data-mood="calm">Calm</button>
+      <button class="tab mood-tab" data-mood="chaotic">Chaotic</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <label style="color:var(--violet)">Animation</label>
+    <div class="tab-row" id="animTabs">
+      <button class="tab anim-tab active" data-anim="none">None</button>
+      <button class="tab anim-tab" data-anim="float">Float</button>
+      <button class="tab anim-tab" data-anim="morph">Morph</button>
+      <button class="tab anim-tab" data-anim="glimmer">Glimmer</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="section-label">Preview</div>
+  <div class="preview-section">
+    <div id="previewSvg" style="flex-shrink:0"></div>
+    <div class="preview-meta">
+      <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
+        <div class="preview-seed" id="previewSeed">hello world</div>
+        <span id="moodPill" style="display:none" class="mood-pill"></span>
+        <span id="animPill" style="display:none" class="anim-pill"></span>
+      </div>
+      <div class="preview-sub" id="previewStyle"></div>
+      <code id="previewCode"></code>
+      <button class="btn btn-ghost" id="copyBtn" style="align-self:flex-start">Copy SVG</button>
+    </div>
+  </div>
+
+  <div class="section-label">Gallery — All Styles</div>
+  <div class="grid" id="gallery"></div>
+
+  <div class="section-label">Mood Showcase</div>
+  <div class="section-desc">Abstract expressionism per style. Nebula uses glowing star eyes; Wireframe highlights mesh paths; Halftone shifts dot density; Isometric tints ghost blocks; Glitch uses neon RGB overlays; Constellation shifts node brightness; Emoticon morphs the integrated mouth arc.</div>
+  <div class="grid" id="moodGallery"></div>
+
+  <div class="section-label">Motion States</div>
+  <div class="section-desc">Float (CSS @keyframes sine-wave), Morph (SMIL on feTurbulence), Glimmer (animateTransform gradient sweep) — all self-contained in the copied SVG.</div>
+  <div class="grid" id="motionGallery"></div>
+
+  <!-- GSAP Showcase -->
+  <div class="section-label">GSAP Interactions</div>
+  <div class="section-desc">DOM-rendered avatars with GSAP-powered interactions. IDs are baked into each SVG element so GSAP can target them precisely.</div>
+  <div class="gsap-grid gsap-section" id="gsapShowcase">
+    <div class="gsap-card" id="card-supernova">
+      <div class="gsap-avatar-wrap" id="av-supernova"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">Supernova <span class="gsap-card-type type-lime">Marble</span></div>
+        <div class="gsap-card-hint">Hover to detonate</div>
+      </div>
+    </div>
+    <div class="gsap-card cyan-hover" id="card-rain">
+      <div class="gsap-avatar-wrap" id="av-rain"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">Binary Rain <span class="gsap-card-type type-cyan">Glitch</span></div>
+        <div class="gsap-card-hint">Continuous loop</div>
+      </div>
+    </div>
+    <div class="gsap-card violet-hover" id="card-constellation">
+      <div class="gsap-avatar-wrap" id="av-constellation"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">Breathing Constellation <span class="gsap-card-type type-violet">Constellation</span></div>
+        <div class="gsap-card-hint">Continuous pulse</div>
+      </div>
+    </div>
+    <div class="gsap-card pink-hover" id="card-smile">
+      <div class="gsap-avatar-wrap" id="av-smile"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">Responsive Smile <span class="gsap-card-type type-pink">Emoticon</span></div>
+        <div class="gsap-card-hint">Click to react</div>
+      </div>
+    </div>
+    <div class="gsap-card violet-hover" id="card-nebula">
+      <div class="gsap-avatar-wrap" id="av-nebula"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">The Drift <span class="gsap-card-type type-violet">Nebula</span></div>
+        <div class="gsap-card-hint">Living lava lamp</div>
+      </div>
+    </div>
+    <div class="gsap-card cyan-hover" id="card-wireframe">
+      <div class="gsap-avatar-wrap" id="av-wireframe"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">The Scan <span class="gsap-card-type type-cyan">Wireframe</span></div>
+        <div class="gsap-card-hint">Real-time render</div>
+      </div>
+    </div>
+    <div class="gsap-card pink-hover" id="card-halftone">
+      <div class="gsap-avatar-wrap" id="av-halftone"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">The Pulse <span class="gsap-card-type type-pink">Halftone</span></div>
+        <div class="gsap-card-hint">Breathing dots</div>
+      </div>
+    </div>
+    <div class="gsap-card" id="card-isometric">
+      <div class="gsap-avatar-wrap" id="av-isometric"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">The Assembler <span class="gsap-card-type type-lime">Isometric</span></div>
+        <div class="gsap-card-hint">Click to assemble</div>
+      </div>
+    </div>
+    <div class="gsap-card cyan-hover" id="card-spectrum">
+      <div class="gsap-avatar-wrap" id="av-spectrum"></div>
+      <div class="gsap-card-info">
+        <div class="gsap-card-title">The Bounce <span class="gsap-card-type type-cyan">Spectrum</span></div>
+        <div class="gsap-card-hint">Hover to peak</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="api-section" id="api">
+    <div class="section-label">JavaScript API</div>
+    <h2>generateAvatar(options)</h2>
+    <div class="api-row"><span class="api-param">seed</span><span class="api-type">string</span><span class="api-desc">Any string — same seed always produces the same avatar</span></div>
+    <div class="api-row"><span class="api-param">style</span><span class="api-type">string?</span><span class="api-desc">marble | beam | bauhaus | pixel | ring | glitch | constellation | emoticon | nebula | wireframe | halftone | isometric | spectrum</span></div>
+    <div class="api-row"><span class="api-param">mood</span><span class="api-type">string?</span><span class="api-desc">none | happy | sad | angry | calm | chaotic</span></div>
+    <div class="api-row"><span class="api-param">anim</span><span class="api-type">string?</span><span class="api-desc">none | float | morph | glimmer</span></div>
+    <div class="api-row"><span class="api-param">size</span><span class="api-type">number?</span><span class="api-desc">Pixel dimension (default: 40)</span></div>
+    <div class="api-row"><span class="api-param">colors</span><span class="api-type">string[]?</span><span class="api-desc">5 hex strings to override palette</span></div>
+    <div class="api-row"><span class="api-param">radius</span><span class="api-type">number?</span><span class="api-desc">Border radius fraction 0–0.5 (default: 0.22)</span></div>
+    <br/>
+    <code>import { generateAvatar } from 'void-avatars';
+
+const svg = generateAvatar({
+  seed: 'user-42',
+  style: 'constellation',
+  mood: 'calm',
+  anim: 'float',
+  size: 80,
+});</code>
+    <br/>
+    <div class="section-label">React</div>
+    <code>import { VoidAvatar } from 'void-avatars/react';
+
+&lt;VoidAvatar seed="user-42" variant="constellation" mood="calm" anim="float" size={80} /&gt;</code>
+  </div>
+</main>
+
+<footer>
+  <span>© 2026 Void Avatars — built by ayotunde obasa</span>
+  <div style="display:flex;gap:1.5rem"><a href="#">npm</a><a href="#">GitHub</a></div>
+</footer>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script type="module">
+const gsap = window.gsap;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HASH + RAND
+// ═══════════════════════════════════════════════════════════════════════════════
+function hashStr(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = (((h << 5) + h) ^ s.charCodeAt(i)) >>> 0;
+  return h;
+}
+function sr(seed, count) {
+  const h = hashStr(seed);
+  return Array.from({ length: count }, (_, i) => {
+    let v = (h ^ (h >>> (i * 3 + 1))) >>> 0;
+    v = (v ^ (v << 13)) >>> 0; v = (v ^ (v >>> 17)) >>> 0; v = (v ^ (v << 5)) >>> 0;
+    return v / 0xffffffff;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COLOR
+// ═══════════════════════════════════════════════════════════════════════════════
+function hslToHex(h, s, l) {
+  const sl = s / 100, ll = l / 100, a = sl * Math.min(ll, 1 - ll);
+  const f = n => { const k = (n + h / 30) % 12, c = ll - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return Math.round(255 * c).toString(16).padStart(2, '0'); };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+function hsl(h, s, l, a = 1) {
+  return a < 1 ? `hsla(${h | 0},${s | 0}%,${l | 0}%,${a.toFixed(2)})` : `hsl(${h | 0},${s | 0}%,${l | 0}%)`;
+}
+function buildPalette(seed) {
+  const r = sr(seed + ':pal', 4);
+  const baseHue = r[0] * 360, step = 55 + r[1] * 40, sat = 60 + r[2] * 25, lit = 28 + r[3] * 10;
+  const colors = Array.from({ length: 5 }, (_, i) => ({
+    h: (baseHue + step * i) % 360,
+    s: Math.max(40, sat - i * 3),
+    l: Math.min(76, lit + i * 11),
+  }));
+  return { colors, focal: colors[4], base: colors[0] };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FILTER DEFS — uid-scoped, GSAP-targetable turb/disp IDs
+// ═══════════════════════════════════════════════════════════════════════════════
+const MOOD_FILTER = {
+  none:    { freq: '0.018 0.014', scale: 0.12 },
+  happy:   { freq: '0.013 0.010', scale: 0.08 },
+  sad:     { freq: '0.022 0.018', scale: 0.15 },
+  angry:   { freq: '0.032 0.025', scale: 0.22 },
+  calm:    { freq: '0.008 0.006', scale: 0.05 },
+  chaotic: { freq: '0.044 0.036', scale: 0.28 },
+};
+function moodFilter(mood) { return MOOD_FILTER[mood] || MOOD_FILTER.none; }
+
+function filterDefs(uid, size, focalHex, mood, doMorph) {
+  const mf = moodFilter(mood);
+  const freq = mf.freq;
+  const dispScale = size * mf.scale;
+  const [fx, fy] = freq.split(' ').map(Number);
+
+  const morphSmil = doMorph ? `<animate attributeName="baseFrequency"
+    values="${freq};${(fx*1.7).toFixed(4)} ${(fy*1.4).toFixed(4)};${(fx*0.6).toFixed(4)} ${(fy*1.6).toFixed(4)};${freq}"
+    dur="11s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"/>
+  <animate attributeName="seed" values="1;50;99;1" dur="11s" repeatCount="indefinite" calcMode="linear"/>` : '';
+
+  return `
+  <filter id="grf-${uid}" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="4" stitchTiles="stitch" result="n"/>
+    <feColorMatrix type="saturate" values="0" in="n" result="gn"/>
+    <feBlend in="SourceGraphic" in2="gn" mode="soft-light" result="out"/>
+    <feComposite in="out" in2="SourceGraphic" operator="in"/>
+  </filter>
+  <filter id="glf-${uid}" x="-40%" y="-40%" width="180%" height="180%">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="${size * 0.07}" result="b"/>
+    <feFlood flood-color="${focalHex}" flood-opacity="0.52" result="c"/>
+    <feComposite in="c" in2="b" operator="in" result="glow"/>
+    <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="shf-${uid}" x="-25%" y="-25%" width="150%" height="150%">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="${size * 0.035}" result="b"/>
+    <feOffset dx="${size * 0.02}" dy="${size * 0.03}" result="o"/>
+    <feFlood flood-color="#000" flood-opacity="0.22" result="c"/>
+    <feComposite in="c" in2="o" operator="in" result="s"/>
+    <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="dpf-${uid}" x="-14%" y="-14%" width="128%" height="128%">
+    <feTurbulence id="va-${uid}-turb" type="turbulence" baseFrequency="${freq}" numOctaves="3" seed="${(size / 2) | 0}" result="t">${morphSmil}</feTurbulence>
+    <feDisplacementMap id="va-${uid}-disp" in="SourceGraphic" in2="t" scale="${dispScale}" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="blf-${uid}">
+    <feGaussianBlur stdDeviation="${size * 0.028}"/>
+  </filter>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOOD OVERLAYS
+// ═══════════════════════════════════════════════════════════════════════════════
+function moodElMarble(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2, c = pal.colors[2], sw = size * 0.026;
+  const paths = {
+    happy:   `M ${size*.28} ${size*.62} Q ${h} ${size*.72} ${size*.72} ${size*.62}`,
+    sad:     `M ${size*.28} ${size*.64} Q ${h} ${size*.55} ${size*.72} ${size*.64}`,
+    angry:   `M ${size*.25} ${size*.60} L ${size*.40} ${size*.65} M ${size*.75} ${size*.60} L ${size*.60} ${size*.65}`,
+    calm:    `M ${size*.30} ${size*.62} L ${size*.70} ${size*.62}`,
+    chaotic: `M ${size*.22} ${size*.60} Q ${size*.36} ${size*.52} ${size*.5} ${size*.62} Q ${size*.64} ${size*.72} ${size*.78} ${size*.60}`,
+  };
+  return `<path d="${paths[mood]||''}" fill="none" stroke="${hsl(c.h,c.s,c.l,0.32)}" stroke-width="${sw}" stroke-linecap="round"/>`;
+}
+
+function moodElBeam(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2, bh = size * 0.07, rx = size * 0.018;
+  const configs = {
+    happy:   { x:-size*.1, y:size*.22, w:size*1.2, rot:-18, c:pal.focal,    op:0.72 },
+    sad:     { x:-size*.1, y:size*.70, w:size*1.2, rot:18,  c:pal.colors[1],op:0.55 },
+    angry:   { x:size*.15, y:size*.18, w:size*.7,  rot:-42, c:pal.colors[3],op:0.80 },
+    calm:    { x:-size*.05,y:size*.45, w:size*1.1, rot:0,   c:pal.colors[2],op:0.38 },
+    chaotic: { x:size*.25, y:size*.35, w:size*.5,  rot:-62, c:pal.focal,    op:0.85 },
+  };
+  const b = configs[mood]; if (!b) return '';
+  return `<g transform="rotate(${b.rot} ${h} ${h})"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${bh}" rx="${rx}" fill="${hsl(b.c.h,b.c.s,b.c.l,b.op)}"/></g>`;
+}
+
+function moodElBauhaus(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h=size/2, fc=hsl(pal.focal.h,pal.focal.s,pal.focal.l,0.88), ac=hsl(pal.colors[2].h,pal.colors[2].s,pal.colors[2].l,0.88);
+  const er=size*.046, ey=size*.365, lx=size*.335, rx2=size*.665, sw=size*.022;
+  let eyes='';
+  if (mood==='calm') {
+    eyes=`<rect x="${lx-er*1.1}" y="${ey-er*.25}" width="${er*2.2}" height="${er*.5}" rx="${er*.25}" fill="${fc}"/><rect x="${rx2-er*1.1}" y="${ey-er*.25}" width="${er*2.2}" height="${er*.5}" rx="${er*.25}" fill="${fc}"/>`;
+  } else if (mood==='angry') {
+    eyes=`<circle cx="${lx}" cy="${ey}" r="${er}" fill="${fc}"/><circle cx="${rx2}" cy="${ey}" r="${er}" fill="${fc}"/>
+    <polygon points="${lx-er*1.4},${ey-er*1.4} ${lx+er*.6},${ey-er*2.4} ${lx+er*1.4},${ey-er*1.1}" fill="${ac}"/>
+    <polygon points="${rx2-er*1.4},${ey-er*1.1} ${rx2-er*.6},${ey-er*2.4} ${rx2+er*1.4},${ey-er*1.4}" fill="${ac}"/>`;
+  } else if (mood==='chaotic') {
+    eyes=`<circle cx="${lx}" cy="${ey}" r="${er}" fill="none" stroke="${fc}" stroke-width="${sw*.8}"/><circle cx="${rx2}" cy="${ey}" r="${er}" fill="none" stroke="${fc}" stroke-width="${sw*.8}"/><circle cx="${lx}" cy="${ey}" r="${er*.4}" fill="${fc}"/><circle cx="${rx2}" cy="${ey}" r="${er*.4}" fill="${fc}"/>`;
+  } else {
+    eyes=`<circle cx="${lx}" cy="${ey}" r="${er}" fill="${fc}"/><circle cx="${rx2}" cy="${ey}" r="${er}" fill="${fc}"/>`;
+  }
+  const my=size*.63, mw=size*.28;
+  let mouth='';
+  if (mood==='happy')   mouth=`<path d="M ${h-mw/2} ${my} A ${mw/2} ${mw/2} 0 0 1 ${h+mw/2} ${my} Z" fill="${ac}"/>`;
+  else if (mood==='sad') mouth=`<path d="M ${h-mw/2} ${my} A ${mw/2} ${mw/2} 0 0 0 ${h+mw/2} ${my}" fill="none" stroke="${ac}" stroke-width="${sw}" stroke-linecap="round"/>`;
+  else if (mood==='angry') { const j=mw/4; mouth=`<path d="M ${h-mw/2} ${my+size*.01} L ${h-mw/2+j} ${my-size*.025} L ${h} ${my+size*.01} L ${h+j} ${my-size*.025} L ${h+mw/2} ${my+size*.01}" fill="none" stroke="${ac}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"/>`; }
+  else if (mood==='calm') mouth=`<line x1="${h-mw/2}" y1="${my}" x2="${h+mw/2}" y2="${my}" stroke="${ac}" stroke-width="${sw}" stroke-linecap="round"/>`;
+  else { const z=mw/5; mouth=`<path d="M ${h-mw/2} ${my} L ${h-mw/2+z} ${my-size*.03} L ${h-mw/2+z*2} ${my+size*.03} L ${h-mw/2+z*3} ${my-size*.028} L ${h-mw/2+z*4} ${my+size*.028} L ${h+mw/2} ${my}" fill="none" stroke="${ac}" stroke-width="${sw*.8}" stroke-linejoin="round" stroke-linecap="round"/>`; }
+  return eyes + mouth;
+}
+
+function moodElPixel(mood, size, pal) {
+  if (mood === 'none') return '';
+  const cell=size/8, fc=hsl(pal.focal.h,pal.focal.s,pal.focal.l,0.92), mc=hsl(pal.colors[3].h,pal.colors[3].s,pal.colors[3].l,0.92);
+  const eyeW=cell*1.6, eyeH=cell*1.6, eyeY=cell*2.1, lEx=cell*1.4, rEx=cell*5.0, rx=cell*0.12;
+  let eyes='';
+  if (mood==='calm') { eyes=`<rect x="${lEx}" y="${eyeY+eyeH*.4}" width="${eyeW}" height="${cell*.4}" rx="${cell*.2}" fill="${fc}"/><rect x="${rEx}" y="${eyeY+eyeH*.4}" width="${eyeW}" height="${cell*.4}" rx="${cell*.2}" fill="${fc}"/>`; }
+  else if (mood==='angry') { eyes=`<rect x="${lEx}" y="${eyeY}" width="${eyeW}" height="${eyeH}" rx="${rx}" fill="${fc}"/><rect x="${rEx}" y="${eyeY}" width="${eyeW}" height="${eyeH}" rx="${rx}" fill="${fc}"/><rect x="${lEx-.3*cell}" y="${eyeY-.9*cell}" width="${eyeW+.3*cell}" height="${cell*.4}" rx="${cell*.08}" fill="${mc}" transform="rotate(-14 ${lEx+eyeW/2} ${eyeY-.7*cell})"/><rect x="${rEx}" y="${eyeY-.9*cell}" width="${eyeW+.3*cell}" height="${cell*.4}" rx="${cell*.08}" fill="${mc}" transform="rotate(14 ${rEx+eyeW/2} ${eyeY-.7*cell})"/>`; }
+  else { eyes=`<rect x="${lEx}" y="${eyeY}" width="${eyeW}" height="${eyeH}" rx="${rx}" fill="${fc}"/><rect x="${rEx}" y="${eyeY}" width="${eyeW}" height="${eyeH}" rx="${rx}" fill="${fc}"/>`; }
+  const mY=cell*5.3, ch=cell*0.42, mRx=cell*0.1;
+  const mouths={
+    happy:[[lEx,mY+cell*.5,cell,ch],[rEx,mY+cell*.5,cell,ch],[lEx+cell,mY+cell,cell*3.6,ch]],
+    sad:[[lEx,mY+cell,cell,ch],[rEx,mY+cell,cell,ch],[lEx+cell,mY+cell*.5,cell*3.6,ch]],
+    angry:[[lEx,mY+cell*.6,cell*.8,ch],[lEx+cell*.8,mY+cell*.9,cell*4,ch],[rEx+cell*.2,mY+cell*.6,cell*.8,ch]],
+    calm:[[size*.32,mY+cell*.7,size*.36,ch]],
+    chaotic:[[lEx,mY+cell*.4,cell,ch],[lEx+cell*1.4,mY+cell*1.1,cell,ch],[lEx+cell*2.8,mY+cell*.3,cell,ch],[rEx,mY+cell,cell,ch],[rEx-cell*1.4,mY+cell*.6,cell,ch]],
+  };
+  return eyes + (mouths[mood]||mouths.calm).map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${mRx}" fill="${mc}"/>`).join('');
+}
+
+function moodElRing(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h=size/2, fc=hsl(pal.focal.h,pal.focal.s,pal.focal.l,0.82), ac=hsl(pal.colors[2].h,pal.colors[2].s,pal.colors[2].l,0.82), r=size*.065, sw=size*.022;
+  const exprs={
+    happy:  `<path d="M ${h-r*2.2} ${h+r*.6} Q ${h} ${h+r*2.8} ${h+r*2.2} ${h+r*.6}" fill="none" stroke="${fc}" stroke-width="${sw}" stroke-linecap="round"/>`,
+    sad:    `<path d="M ${h-r*2.2} ${h+r*2} Q ${h} ${h-r*.4} ${h+r*2.2} ${h+r*2}" fill="none" stroke="${fc}" stroke-width="${sw}" stroke-linecap="round"/>`,
+    angry:  `<path d="M ${h-r*2.2} ${h-r*.6} L ${h-r*.4} ${h+r*.8} M ${h+r*2.2} ${h-r*.6} L ${h+r*.4} ${h+r*.8}" stroke="${fc}" stroke-width="${sw}" stroke-linecap="round"/>`,
+    calm:   `<line x1="${h-r*2}" y1="${h+r}" x2="${h+r*2}" y2="${h+r}" stroke="${fc}" stroke-width="${sw}" stroke-linecap="round"/>`,
+    chaotic:`<circle cx="${h-r*2}" cy="${h+r}" r="${r*.55}" fill="${fc}"/><circle cx="${h}" cy="${h+r*2}" r="${r*.55}" fill="${ac}"/><circle cx="${h+r*2}" cy="${h+r*.3}" r="${r*.55}" fill="${fc}"/><circle cx="${h-r*.8}" cy="${h-r*1.8}" r="${r*.4}" fill="${ac}"/>`,
+  };
+  return exprs[mood]||'';
+}
+
+// Glitch: neon brightness overlay shifted per mood channel
+function moodElGlitch(mood, size, pal) {
+  if (mood === 'none') return '';
+  const neonColors = { happy:'#00ff88', sad:'#4488ff', angry:'#ff2244', calm:'#88ffff', chaotic:'#ff00ff' };
+  const neon = neonColors[mood] || '#ccff00';
+  const sliceY = { happy:size*.25, sad:size*.65, angry:size*.35, calm:size*.50, chaotic:size*.15 }[mood] || size*.4;
+  const sliceH = size * 0.08;
+  const offset = { happy:size*.04, sad:-size*.06, angry:size*.10, calm:size*.01, chaotic:-size*.12 }[mood] || size*.05;
+  return `<rect x="0" y="${sliceY}" width="${size}" height="${sliceH}" fill="${neon}" opacity="0.18"/>
+    <rect x="${offset}" y="${sliceY+sliceH}" width="${size}" height="${sliceH*.6}" fill="${neon}" opacity="0.10"/>`;
+}
+
+// Constellation: mood tints the connecting lines and node glow intensity
+function moodElConstellation(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2;
+  const moodGlows = {
+    happy:   { color:'#ccff00', r:size*.18, op:0.12 },
+    sad:     { color:'#4488ff', r:size*.14, op:0.08 },
+    angry:   { color:'#ff2244', r:size*.22, op:0.16 },
+    calm:    { color:'#88ffff', r:size*.10, op:0.06 },
+    chaotic: { color:'#ff00ff', r:size*.28, op:0.20 },
+  };
+  const g = moodGlows[mood] || moodGlows.calm;
+  return `<circle cx="${h}" cy="${h}" r="${g.r}" fill="${g.color}" opacity="${g.op}"/>`;
+}
+
+function moodElNebula(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2, fc = hsl(pal.focal.h, pal.focal.s, pal.focal.l, 0.92);
+  const ac = hsl(pal.colors[3].h, pal.colors[3].s, pal.colors[3].l, 0.85);
+  const eyeR = size * 0.028, eyeY = size * 0.38, lx = size * 0.34, rx = size * 0.66, glowR = eyeR * 3;
+  let eyes = `<circle cx="${lx}" cy="${eyeY}" r="${glowR}" fill="${fc}" opacity="0.15"/>
+    <circle cx="${rx}" cy="${eyeY}" r="${glowR}" fill="${fc}" opacity="0.15"/>
+    <circle cx="${lx}" cy="${eyeY}" r="${eyeR}" fill="white" opacity="0.9"/>
+    <circle cx="${rx}" cy="${eyeY}" r="${eyeR}" fill="white" opacity="0.9"/>`;
+  const mY = size * 0.58, sw = size * 0.015;
+  const tints = {
+    happy: `<path d="M ${h-size*.08} ${mY} Q ${h} ${mY+size*.06} ${h+size*.08} ${mY}" fill="none" stroke="${ac}" stroke-width="${sw}" stroke-linecap="round" opacity="0.6"/>`,
+    sad: `<path d="M ${h-size*.08} ${mY+size*.03} Q ${h} ${mY-size*.04} ${h+size*.08} ${mY+size*.03}" fill="none" stroke="${ac}" stroke-width="${sw}" stroke-linecap="round" opacity="0.5"/>`,
+    angry: `<line x1="${lx-eyeR}" y1="${eyeY-eyeR*2.5}" x2="${lx+eyeR*2}" y2="${eyeY-eyeR*1.2}" stroke="${ac}" stroke-width="${size*.012}" stroke-linecap="round" opacity="0.7"/>
+      <line x1="${rx+eyeR}" y1="${eyeY-eyeR*2.5}" x2="${rx-eyeR*2}" y2="${eyeY-eyeR*1.2}" stroke="${ac}" stroke-width="${size*.012}" stroke-linecap="round" opacity="0.7"/>`,
+    calm: `<line x1="${h-size*.06}" y1="${mY}" x2="${h+size*.06}" y2="${mY}" stroke="${ac}" stroke-width="${size*.012}" stroke-linecap="round" opacity="0.4"/>`,
+    chaotic: `<path d="M ${h-size*.1} ${mY} L ${h-size*.04} ${mY-size*.03} L ${h+size*.04} ${mY+size*.03} L ${h+size*.1} ${mY}" fill="none" stroke="${ac}" stroke-width="${size*.012}" stroke-linecap="round" opacity="0.6"/>`,
+  };
+  return eyes + (tints[mood] || '');
+}
+
+function moodElWireframe(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2, sw = size * 0.018;
+  const neons = { happy:'#00ff88', sad:'#4488ff', angry:'#ff2244', calm:'#88ffff', chaotic:'#ff00ff' };
+  const neon = neons[mood] || '#ccff00';
+  const exprs = {
+    happy: `<path d="M ${size*.28} ${size*.55} Q ${h} ${size*.65} ${size*.72} ${size*.55}" fill="none" stroke="${neon}" stroke-width="${sw}" stroke-linecap="round" opacity="0.8"/>`,
+    sad: `<path d="M ${size*.30} ${size*.62} Q ${h} ${size*.52} ${size*.70} ${size*.62}" fill="none" stroke="${neon}" stroke-width="${sw}" stroke-linecap="round" opacity="0.7"/>`,
+    angry: `<path d="M ${size*.25} ${size*.45} L ${size*.40} ${size*.52} M ${size*.75} ${size*.45} L ${size*.60} ${size*.52}" fill="none" stroke="${neon}" stroke-width="${sw}" stroke-linecap="round" opacity="0.85"/>
+      <line x1="${size*.35}" y1="${size*.60}" x2="${size*.65}" y2="${size*.60}" stroke="${neon}" stroke-width="${sw*.7}" stroke-linecap="round" opacity="0.7"/>`,
+    calm: `<line x1="${size*.32}" y1="${size*.56}" x2="${size*.68}" y2="${size*.56}" stroke="${neon}" stroke-width="${sw*.8}" stroke-linecap="round" opacity="0.5"/>`,
+    chaotic: `<path d="M ${size*.22} ${size*.50} Q ${size*.36} ${size*.42} ${h} ${size*.55} Q ${size*.64} ${size*.68} ${size*.78} ${size*.48}" fill="none" stroke="${neon}" stroke-width="${sw}" stroke-linecap="round" opacity="0.75"/>`,
+  };
+  return exprs[mood] || '';
+}
+
+function moodElHalftone(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2;
+  const tints = {
+    happy: { color: hsl(pal.focal.h, pal.focal.s, pal.focal.l), r: size * 0.22, op: 0.10 },
+    sad: { color: hsl(pal.colors[1].h, pal.colors[1].s, pal.colors[1].l), r: size * 0.18, op: 0.08 },
+    angry: { color: '#ff2244', r: size * 0.26, op: 0.12 },
+    calm: { color: hsl(pal.colors[2].h, pal.colors[2].s, pal.colors[2].l), r: size * 0.14, op: 0.06 },
+    chaotic: { color: '#ff00ff', r: size * 0.30, op: 0.14 },
+  };
+  const t = tints[mood]; if (!t) return '';
+  return `<circle cx="${h}" cy="${h}" r="${t.r}" fill="${t.color}" opacity="${t.op}"/>`;
+}
+
+function moodElIsometric(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2;
+  const tints = {
+    happy: { color: '#ccff00', op: 0.12, scale: 0.25 },
+    sad: { color: '#4488ff', op: 0.10, scale: 0.20 },
+    angry: { color: '#ff2244', op: 0.16, scale: 0.28 },
+    calm: { color: '#88ffff', op: 0.07, scale: 0.16 },
+    chaotic: { color: '#ff00ff', op: 0.18, scale: 0.32 },
+  };
+  const t = tints[mood]; if (!t) return '';
+  return `<circle cx="${h}" cy="${h * 0.85}" r="${size * t.scale}" fill="${t.color}" opacity="${t.op}"/>`;
+}
+
+function moodElSpectrum(mood, size, pal) {
+  if (mood === 'none') return '';
+  const h = size / 2;
+  const tints = {
+    happy: { color: '#ccff00', r: size*0.28, op: 0.10 },
+    sad: { color: '#4488ff', r: size*0.22, op: 0.07 },
+    angry: { color: '#ff2244', r: size*0.30, op: 0.14 },
+    calm: { color: '#88ffff', r: size*0.18, op: 0.05 },
+    chaotic: { color: '#ff00ff', r: size*0.34, op: 0.16 },
+  };
+  const t = tints[mood]; if (!t) return '';
+  return `<circle cx="${h}" cy="${size*0.75}" r="${t.r}" fill="${t.color}" opacity="${t.op}"/>`;
+}
+
+function getMoodEl(mood, style, size, pal) {
+  if (mood === 'none') return '';
+  switch(style) {
+    case 'marble':        return moodElMarble(mood, size, pal);
+    case 'beam':          return moodElBeam(mood, size, pal);
+    case 'bauhaus':       return moodElBauhaus(mood, size, pal);
+    case 'pixel':         return moodElPixel(mood, size, pal);
+    case 'ring':          return moodElRing(mood, size, pal);
+    case 'glitch':        return moodElGlitch(mood, size, pal);
+    case 'constellation': return moodElConstellation(mood, size, pal);
+    case 'emoticon':      return '';
+    case 'nebula':        return moodElNebula(mood, size, pal);
+    case 'wireframe':     return moodElWireframe(mood, size, pal);
+    case 'halftone':      return moodElHalftone(mood, size, pal);
+    case 'isometric':     return moodElIsometric(mood, size, pal);
+    case 'spectrum':      return moodElSpectrum(mood, size, pal);
+    default:              return '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANIMATION HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildFloat(uid, size) {
+  const dist = (size * 0.042).toFixed(1);
+  const dur  = (3.2 + (hashStr(uid) % 18) / 10).toFixed(1);
+  return {
+    styleDef: `@keyframes va-flt-${uid}{0%,100%{transform:translateY(0)}50%{transform:translateY(-${dist}px)}}.va-fg-${uid}{animation:va-flt-${uid} ${dur}s ease-in-out infinite;transform-box:fill-box;transform-origin:center}`,
+    wrapOpen: `<g class="va-fg-${uid}">`, wrapClose: `</g>`, extraDefs: '', overlay: '',
+  };
+}
+function buildGlimmer(uid, size) {
+  const extraDefs = `<linearGradient id="shim-${uid}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${(size*.55).toFixed(1)}" y2="${size}">
+    <stop offset="0%"  stop-color="white" stop-opacity="0"/><stop offset="28%" stop-color="white" stop-opacity="0"/>
+    <stop offset="50%" stop-color="white" stop-opacity="0.24"/><stop offset="72%" stop-color="white" stop-opacity="0"/>
+    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    <animateTransform attributeName="gradientTransform" type="translate" from="-${(size*1.1).toFixed(1)} 0" to="${(size*1.8).toFixed(1)} 0" dur="2.9s" repeatCount="indefinite" calcMode="spline" keySplines="0.25 0.1 0.25 1"/>
+  </linearGradient>`;
+  return { styleDef:'', wrapOpen:'', wrapClose:'', extraDefs, overlay:`<rect width="${size}" height="${size}" fill="url(#shim-${uid})"/>` };
+}
+function buildAnimData(anim, uid, size) {
+  if (anim === 'float')   return buildFloat(uid, size);
+  if (anim === 'glimmer') return buildGlimmer(uid, size);
+  return { styleDef:'', wrapOpen:'', wrapClose:'', extraDefs:'', overlay:'' };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STYLE RENDERERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function marble(seed, size, uid, pal) {
+  const r = sr(seed + ':m', 16), h = size / 2;
+  const rings = [{outerR:size*.49,ci:0},{outerR:size*.37,ci:1},{outerR:size*.26,ci:2},{outerR:size*.15,ci:3}];
+  let extraDefs = '';
+  rings.forEach((ring, i) => {
+    const next = rings[i + 1], c1 = pal.colors[ring.ci], c2 = next ? pal.colors[next.ci] : pal.focal;
+    const cx = 0.30 + r[i*2]*.40, cy = 0.30 + r[i*2+1]*.40;
+    extraDefs += `<radialGradient id="mg-${uid}-${i}" cx="${cx}" cy="${cy}" r="0.6" gradientUnits="objectBoundingBox"><stop offset="0%" stop-color="${hsl(c1.h,c1.s,c1.l)}"/><stop offset="100%" stop-color="${hsl(c2.h,c2.s,c2.l)}"/></radialGradient>`;
+  });
+  const filled = rings.map((ring,i)=>`<circle cx="${h}" cy="${h}" r="${ring.outerR}" fill="url(#mg-${uid}-${i})"/>`).join('');
+  const inkRings = rings.map((ring,i)=>{
+    const sw=size*(0.010+r[8+i]*.012);
+    return `<circle cx="${h}" cy="${h}" r="${ring.outerR-sw/2}" fill="none" stroke="${hsl(pal.colors[ring.ci].h,pal.colors[ring.ci].s,pal.colors[ring.ci].l,0.38)}" stroke-width="${sw}" stroke-dasharray="${ring.outerR*.55} ${ring.outerR*.14} ${ring.outerR*.28} ${ring.outerR*.18}" stroke-dashoffset="${r[i]*ring.outerR}"/>`;
+  }).join('');
+  const body = `<rect width="${size}" height="${size}" fill="${hsl(pal.base.h,pal.base.s,pal.base.l)}"/>
+    <g id="va-${uid}-marble-core" filter="url(#dpf-${uid})">${filled}</g>
+    ${inkRings}
+    <circle cx="${h}" cy="${h}" r="${size*.09}" fill="${hsl(pal.focal.h,pal.focal.s,pal.focal.l)}" filter="url(#glf-${uid})"/>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.55"/>`;
+  return { extraDefs, body };
+}
+
+function beam(seed, size, uid, pal) {
+  const r = sr(seed + ':b', 48), h = size / 2;
+  const count = 5 + Math.floor(r[0] * 3);
+  let blooms = '', beams = '';
+  for (let i = 0; i < count; i++) {
+    const rr = n => r[(i*7+n)%r.length];
+    const land = rr(0) > 0.5;
+    const bw=land?size*(0.45+rr(1)*.65):size*(0.10+rr(1)*.22), bh=land?size*(0.10+rr(2)*.22):size*(0.45+rr(2)*.65);
+    const bx=rr(3)*size-bw*.15, by=rr(4)*size-bh*.15, rx=size*(0.015+rr(5)*.055), rot=(rr(6)-.5)*28;
+    const ci=i%pal.colors.length, c=pal.colors[ci], op=0.50+rr(1)*.35;
+    const isFocal=ci===pal.colors.length-1, gf=isFocal?`filter="url(#glf-${uid})"`:'';
+    blooms+=`<rect x="${bx+2}" y="${by+2}" width="${bw}" height="${bh}" rx="${rx}" fill="${hsl(c.h,c.s,c.l,0.32)}" transform="rotate(${rot} ${h} ${h})" filter="url(#blf-${uid})"/>`;
+    beams+=`<g transform="rotate(${rot} ${h} ${h})"><rect x="${bx-1.5}" y="${by-2}" width="${bw}" height="${bh}" rx="${rx}" fill="none" stroke="${hsl(c.h,c.s,c.l,0.52)}" stroke-width="${size*.011}"/><rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="${rx}" fill="${hsl(c.h,c.s,c.l,op)}" ${gf}/></g>`;
+  }
+  return { extraDefs:'', body:`<rect width="${size}" height="${size}" fill="${hsl(pal.base.h,pal.base.s,pal.base.l)}"/>${blooms}${beams}<rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.5"/>` };
+}
+
+function bauhaus(seed, size, uid, pal) {
+  const r=sr(seed+':bh',56), cell=size/3, count=5+Math.floor(r[0]*3);
+  const SHAPES=['circle','square','triangle','ring','half'];
+  let body=`<rect width="${size}" height="${size}" fill="${hsl(pal.base.h,pal.base.s,pal.base.l)}"/>`;
+  for (let i=0;i<count;i++) {
+    const rr=n=>r[(i*9+n)%r.length];
+    const col=i%3,row=Math.floor(i/3)%3;
+    const cx=cell*col+cell*(0.2+rr(0)*.6),cy=cell*row+cell*(0.2+rr(1)*.6),rad=cell*(0.16+rr(2)*.24);
+    const ci=i%pal.colors.length,isFocal=i===Math.floor(count/2);
+    const fc=isFocal?pal.focal:pal.colors[ci],sc=pal.colors[(ci+1)%pal.colors.length];
+    const type=SHAPES[Math.floor(rr(3)*SHAPES.length)],rot=rr(4)*50;
+    const px=(rr(5)-.5)*size*.038,py=(rr(6)-.5)*size*.038;
+    const fs=hsl(fc.h,fc.s,fc.l),ss=hsl(sc.h,sc.s,sc.l,0.62);
+    const gf=isFocal?`filter="url(#glf-${uid})"`:`filter="url(#shf-${uid})"`,sw=rad*.11;
+    if(type==='circle') body+=`<circle cx="${cx-px}" cy="${cy-py}" r="${rad}" fill="none" stroke="${ss}" stroke-width="${sw}"/><circle cx="${cx}" cy="${cy}" r="${rad*.88}" fill="${fs}" ${gf}/>`;
+    else if(type==='ring') body+=`<circle cx="${cx-px}" cy="${cy-py}" r="${rad}" fill="none" stroke="${ss}" stroke-width="${rad*.3}"/><circle cx="${cx}" cy="${cy}" r="${rad}" fill="none" stroke="${fs}" stroke-width="${rad*.22}" ${gf}/>`;
+    else if(type==='square'){const s=rad*1.42;body+=`<g transform="rotate(${rot} ${cx} ${cy})"><rect x="${cx-s/2-px}" y="${cy-s/2-py}" width="${s}" height="${s}" rx="${rad*.14}" fill="none" stroke="${ss}" stroke-width="${sw}"/><rect x="${cx-s/2}" y="${cy-s/2}" width="${s}" height="${s}" rx="${rad*.14}" fill="${fs}" ${gf}/></g>`;}
+    else if(type==='triangle'){const th=rad*1.5;const pts=`${cx},${cy-th} ${cx+rad*1.1},${cy+th*.5} ${cx-rad*1.1},${cy+th*.5}`,ptso=`${cx-px},${cy-th-py} ${cx+rad*1.1-px},${cy+th*.5-py} ${cx-rad*1.1-px},${cy+th*.5-py}`;body+=`<g transform="rotate(${rot} ${cx} ${cy})"><polygon points="${ptso}" fill="none" stroke="${ss}" stroke-width="${sw}"/><polygon points="${pts}" fill="${fs}" ${gf}/></g>`;}
+    else{const af=`M ${cx-rad} ${cy} A ${rad} ${rad} 0 0 1 ${cx+rad} ${cy} Z`,as=`M ${cx-rad-px} ${cy-py} A ${rad} ${rad} 0 0 1 ${cx+rad-px} ${cy-py} Z`;body+=`<g transform="rotate(${rot} ${cx} ${cy})"><path d="${as}" fill="none" stroke="${ss}" stroke-width="${sw}"/><path d="${af}" fill="${fs}" ${gf}/></g>`;}
+  }
+  body+=`<rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.6"/>`;
+  return { extraDefs:'', body };
+}
+
+function pixel(seed, size, uid, pal) {
+  const GRID=8, r=sr(seed+':px',GRID*4+4), cell=size/GRID;
+  let body=`<rect width="${size}" height="${size}" fill="${hsl(pal.base.h,pal.base.s,pal.base.l)}"/>`;
+  for(let row=0;row<GRID;row++) for(let col=0;col<GRID/2;col++) {
+    const v=r[row*(GRID/2)+col];
+    if(v>0.33){
+      const ci=Math.floor(v*pal.colors.length),c=pal.colors[Math.min(ci,pal.colors.length-1)];
+      const isFocal=ci>=pal.colors.length-1,gf=isFocal?`filter="url(#glf-${uid})"`:' ';
+      const x=col*cell,mx=(GRID-1-col)*cell,y=row*cell,pad=cell*.07,sw=cell*.075,inner=cell-pad*2,rxv=cell*.09;
+      const fs=hsl(c.h,c.s,c.l),ss=hsl(c.h,c.s,c.l,0.42);
+      const cellEl=sx=>`<rect x="${sx+pad-1.2}" y="${y+pad-1.2}" width="${inner}" height="${inner}" rx="${rxv}" fill="none" stroke="${ss}" stroke-width="${sw}"/>
+        <rect x="${sx+pad}" y="${y+pad}" width="${inner}" height="${inner}" rx="${rxv}" fill="${fs}" ${gf} class="va-pxc-${uid}"/>`;
+      body+=cellEl(x);
+      if(col<GRID/2-1||GRID%2!==0) body+=cellEl(mx);
+    }
+  }
+  body+=`<rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.65"/>`;
+  return { extraDefs:'', body };
+}
+
+function ring(seed, size, uid, pal) {
+  const r=sr(seed+':rg',64),h=size/2;
+  const p2c=(cx,cy,rad,deg)=>({x:cx+rad*Math.cos((deg-90)*Math.PI/180),y:cy+rad*Math.sin((deg-90)*Math.PI/180)});
+  const radii=[size*.46,size*.35,size*.24,size*.14],widths=radii.map((rad,i)=>rad*(0.2+r[i]*.15));
+  let body=`<rect width="${size}" height="${size}" fill="${hsl(pal.base.h,pal.base.s,pal.base.l)}"/>`;
+  radii.forEach((outerR,ri)=>{
+    const innerR=outerR-widths[ri],c1=pal.colors[ri],c2=pal.colors[(ri+2)%pal.colors.length];
+    const segs=3+Math.floor(r[ri*4]*4);let angle=r[ri*4+1]*360;
+    for(let s=0;s<segs;s++){
+      const span=(360/segs)*(0.55+r[(ri*10+s)%r.length]*.45),end=angle+span;
+      const c=s%2===0?c1:c2,isFocal=ri===radii.length-1;
+      const gf=isFocal?`filter="url(#glf-${uid})"`:`filter="url(#shf-${uid})"`;
+      const os=p2c(h,h,outerR,angle),oe=p2c(h,h,outerR,end),ie=p2c(h,h,innerR,end),is=p2c(h,h,innerR,angle);
+      const large=span>180?1:0;
+      body+=`<path d="M ${os.x} ${os.y} A ${outerR} ${outerR} 0 ${large} 1 ${oe.x} ${oe.y} L ${ie.x} ${ie.y} A ${innerR} ${innerR} 0 ${large} 0 ${is.x} ${is.y} Z" fill="${hsl(c.h,c.s,c.l)}" ${gf}/>`;
+      angle=end+(360/segs-span);
+    }
+  });
+  body+=`<circle cx="${h}" cy="${h}" r="${size*.065}" fill="${hsl(pal.focal.h,pal.focal.s,pal.focal.l)}" filter="url(#glf-${uid})"/>`;
+  body+=`<rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.55"/>`;
+  return { extraDefs:'', body };
+}
+
+// ── NEW: GLITCH ───────────────────────────────────────────────────────────────
+function glitch(seed, size, uid, pal) {
+  const r = sr(seed + ':gl', 80);
+  const GRID = 16;
+  const cell = size / GRID;
+
+  // Neon palette derived from the base palette + pure neons
+  const neons = [
+    hsl(pal.focal.h, 100, 62),
+    hsl((pal.focal.h + 120) % 360, 100, 58),
+    hsl((pal.focal.h + 240) % 360, 100, 62),
+    '#00ffcc', '#ff00aa',
+  ];
+
+  // Core 16×16 symmetric pixel grid
+  let cells = '';
+  for (let row = 0; row < GRID; row++) {
+    for (let col = 0; col < GRID / 2; col++) {
+      const v = r[(row * GRID / 2 + col) % r.length];
+      if (v > 0.48) {
+        const ci = Math.floor(v * neons.length);
+        const clr = neons[Math.min(ci, neons.length - 1)];
+        const x = col * cell, mx = (GRID - 1 - col) * cell, y = row * cell;
+        const pad = cell * 0.04;
+        cells += `<rect x="${x+pad}" y="${y+pad}" width="${cell-pad*2}" height="${cell-pad*2}" fill="${clr}" class="va-pxc-${uid}"/>`;
+        if (col !== GRID / 2 - 1) {
+          cells += `<rect x="${mx+pad}" y="${y+pad}" width="${cell-pad*2}" height="${cell-pad*2}" fill="${clr}" class="va-pxc-${uid}"/>`;
+        }
+      }
+    }
+  }
+
+  // Horizontal slice disruptions (3–5 rows offset sideways)
+  const sliceCount = 2 + Math.floor(r[70] * 4);
+  let sliceDefs = '', sliceEls = '';
+  for (let i = 0; i < sliceCount; i++) {
+    const sliceRow = Math.floor(r[71 + i] * (GRID - 2)) + 1;
+    const offset = (r[72 + i] - 0.5) * size * 0.28;
+    const sliceH = cell * (0.8 + r[73 + i]);
+    const cpId = `va-slcp-${uid}-${i}`;
+    sliceDefs += `<clipPath id="${cpId}"><rect x="${-size}" y="${sliceRow*cell}" width="${size*3}" height="${sliceH}"/></clipPath>`;
+    sliceEls += `<g clip-path="url(#${cpId})" transform="translate(${offset},0)" opacity="0.9">${cells}</g>`;
+  }
+
+  // Chromatic aberration filter — RGB channel split
+  const caOff = size * 0.022;
+  const caFilter = `<filter id="va-caf-${uid}" x="-5%" y="0%" width="110%" height="100%" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/>
+    <feOffset in="r" dx="-${caOff}" dy="0" result="ro"/>
+    <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/>
+    <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b"/>
+    <feOffset in="b" dx="${caOff}" dy="0" result="bo"/>
+    <feMerge><feMergeNode in="ro"/><feMergeNode in="g"/><feMergeNode in="bo"/></feMerge>
+  </filter>`;
+
+  const body = `<rect width="${size}" height="${size}" fill="#000"/>
+    <g id="va-${uid}-glitch-base" filter="url(#va-caf-${uid})">${cells}</g>
+    <g id="va-${uid}-glitch-slices" filter="url(#va-caf-${uid})" opacity="0.85">${sliceEls}</g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.38"/>`;
+
+  return { extraDefs: caFilter + sliceDefs, body };
+}
+
+// ── NEW: CONSTELLATION ────────────────────────────────────────────────────────
+function constellation(seed, size, uid, pal) {
+  const r = sr(seed + ':con', 90), h = size / 2;
+
+  // Deep void-purple bg
+  const bgColor = `hsl(260,55%,7%)`;
+  const nodeCount = 8 + Math.floor(r[0] * 7);
+
+  // Place nodes
+  const nodes = Array.from({ length: nodeCount }, (_, i) => ({
+    x: size * (0.07 + r[i * 3 % r.length] * 0.86),
+    y: size * (0.07 + r[(i * 3 + 1) % r.length] * 0.86),
+    r: size * (0.018 + r[(i * 3 + 2) % r.length] * 0.026),
+    ci: i % pal.colors.length,
+    isCenter: i === Math.floor(nodeCount / 2),
+  }));
+
+  // Connect nodes: each to nearest if within 40% of size and random chance > 0.28
+  const lines = [];
+  nodes.forEach((a, i) => nodes.forEach((b, j) => {
+    if (i >= j) return;
+    const dist = Math.hypot(a.x - b.x, a.y - b.y);
+    if (dist < size * 0.42 && r[(i * nodeCount + j) % r.length] > 0.28) {
+      lines.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, len: dist.toFixed(2) });
+    }
+  }));
+
+  // Lime line color
+  const lineColor = hsl(pal.focal.h, 85, 68, 0.55);
+
+  const linesEl = lines.map((l, idx) =>
+    `<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}"
+      stroke="${lineColor}" stroke-width="0.5"
+      stroke-dasharray="${l.len}" stroke-dashoffset="0"
+      data-len="${l.len}"
+      class="va-cl-${uid}" id="va-${uid}-line-${idx}"/>`
+  ).join('');
+
+  const nodesEl = nodes.map((n, i) => {
+    const c = pal.colors[n.ci];
+    return `<g class="va-cn-${uid}" id="va-${uid}-node-${i}">
+      <circle cx="${n.x}" cy="${n.y}" r="${n.r * 3.5}" fill="${hsl(c.h,c.s,c.l,0.10)}"/>
+      <circle cx="${n.x}" cy="${n.y}" r="${n.r * 1.9}" fill="${hsl(c.h,c.s,c.l,0.18)}"/>
+      ${n.isCenter
+        ? `<circle cx="${n.x}" cy="${n.y}" r="${n.r * 1.4}" fill="${hsl(pal.focal.h,pal.focal.s,pal.focal.l)}" filter="url(#glf-${uid})"/>`
+        : `<circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="${hsl(c.h,c.s,c.l)}"/>`
+      }
+    </g>`;
+  }).join('');
+
+  const body = `<rect width="${size}" height="${size}" fill="${bgColor}"/>
+    <g id="va-${uid}-const-lines">${linesEl}</g>
+    <g id="va-${uid}-const-nodes">${nodesEl}</g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.4"/>`;
+
+  return { extraDefs: '', body };
+}
+
+// ── NEW: EMOTICON ─────────────────────────────────────────────────────────────
+function emoticon(seed, size, uid, pal) {
+  const r = sr(seed + ':em', 30), h = size / 2;
+
+  // Face background + shape
+  const faceType = Math.floor(r[0] * 3);
+  const faceR = size * 0.41;
+  const faceC = pal.colors[1];
+  const faceFs = hsl(faceC.h, faceC.s, faceC.l);
+
+  let faceEl = '';
+  if (faceType === 0) {
+    faceEl = `<circle cx="${h}" cy="${h}" r="${faceR}" fill="${faceFs}"/>`;
+  } else if (faceType === 1) {
+    // Hexagon
+    const pts = Array.from({ length: 6 }, (_, i) => {
+      const a = (i * 60 - 30) * Math.PI / 180;
+      return `${h + faceR * Math.cos(a)},${h + faceR * Math.sin(a)}`;
+    }).join(' ');
+    faceEl = `<polygon points="${pts}" fill="${faceFs}"/>`;
+  } else {
+    faceEl = `<rect x="${h-faceR}" y="${h-faceR}" width="${faceR*2}" height="${faceR*2}" rx="${faceR*.38}" fill="${faceFs}"/>`;
+  }
+
+  // Eyes — type varies per seed
+  const eyeStyle = Math.floor(r[1] * 4);
+  const eyeY = h - size * 0.09;
+  const eyeSpread = size * 0.14, eyeR = size * 0.065;
+  const eyeC = pal.focal, eyeFs = hsl(eyeC.h, eyeC.s, eyeC.l);
+  let eyesEl = '';
+  switch (eyeStyle) {
+    case 0: // circles
+      eyesEl = `<circle cx="${h-eyeSpread}" cy="${eyeY}" r="${eyeR}" fill="${eyeFs}"/><circle cx="${h+eyeSpread}" cy="${eyeY}" r="${eyeR}" fill="${eyeFs}"/>`;
+      break;
+    case 1: // semicircle squint
+      eyesEl = `<path d="M ${h-eyeSpread-eyeR} ${eyeY} A ${eyeR} ${eyeR} 0 0 1 ${h-eyeSpread+eyeR} ${eyeY} Z" fill="${eyeFs}"/>
+                <path d="M ${h+eyeSpread-eyeR} ${eyeY} A ${eyeR} ${eyeR} 0 0 1 ${h+eyeSpread+eyeR} ${eyeY} Z" fill="${eyeFs}"/>`;
+      break;
+    case 2: // line eyes
+      eyesEl = `<line x1="${h-eyeSpread-eyeR}" y1="${eyeY}" x2="${h-eyeSpread+eyeR}" y2="${eyeY}" stroke="${eyeFs}" stroke-width="${size*.026}" stroke-linecap="round"/>
+                <line x1="${h+eyeSpread-eyeR}" y1="${eyeY}" x2="${h+eyeSpread+eyeR}" y2="${eyeY}" stroke="${eyeFs}" stroke-width="${size*.026}" stroke-linecap="round"/>`;
+      break;
+    case 3: // oval
+      eyesEl = `<ellipse cx="${h-eyeSpread}" cy="${eyeY}" rx="${eyeR*1.3}" ry="${eyeR*.7}" fill="${eyeFs}"/>
+                <ellipse cx="${h+eyeSpread}" cy="${eyeY}" rx="${eyeR*1.3}" ry="${eyeR*.7}" fill="${eyeFs}"/>`;
+      break;
+  }
+
+  // Mouth — single Q-bezier path, morphable by GSAP
+  const mouthY = h + size * 0.11;
+  const mouthW = size * 0.20;
+  const mouthC = pal.colors[3];
+  const mouthSW = size * 0.030;
+  // Start as smile: control point BELOW baseline (larger y) = curve bows down = smile ↑
+  const smileD = `M ${h - mouthW} ${mouthY} Q ${h} ${mouthY + mouthW * 0.65} ${h + mouthW} ${mouthY}`;
+
+  const mouthEl = `<path id="va-${uid}-mouth-path" d="${smileD}"
+    fill="none" stroke="${hsl(mouthC.h, mouthC.s, mouthC.l)}"
+    stroke-width="${mouthSW}" stroke-linecap="round"/>`;
+
+  const body = `<rect width="${size}" height="${size}" fill="${hsl(pal.base.h,pal.base.s,pal.base.l)}"/>
+    <g id="va-${uid}-face">
+      ${faceEl}
+      <g id="va-${uid}-eyes">${eyesEl}</g>
+      <g id="va-${uid}-mouth">${mouthEl}</g>
+    </g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.5"/>`;
+
+  return { extraDefs: '', body };
+}
+
+// ── NEBULA ────────────────────────────────────────────────────────────────────
+function nebula(seed, size, uid, pal) {
+  const r = sr(seed + ':nebula', 40);
+  const blobCount = 4 + Math.floor(r[0] * 2);
+  const blobs = [];
+  for (let i = 0; i < blobCount; i++) {
+    const ci = i % pal.colors.length;
+    const c = pal.colors[ci];
+    const cx = size * (0.15 + r[(i*4)%r.length] * 0.70);
+    const cy = size * (0.15 + r[(i*4+1)%r.length] * 0.70);
+    const rx = size * (0.18 + r[(i*4+2)%r.length] * 0.22);
+    const ry = size * (0.15 + r[(i*4+3)%r.length] * 0.25);
+    const op = 0.30 + r[(i*3+20)%r.length] * 0.30;
+    const blur = size * (0.06 + r[(i*2+25)%r.length] * 0.08);
+    blobs.push({ cx, cy, rx, ry, color: hsl(c.h, c.s, c.l), op, blur });
+  }
+  const blobFilters = blobs.map((b, i) =>
+    `<filter id="nbf-${uid}-${i}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${b.blur.toFixed(1)}"/></filter>`
+  ).join('');
+  const colorBleed = `<filter id="ncb-${uid}" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="1.2 0.15 0 0 0  0 1.1 0.2 0 0  0.15 0 1.3 0 0  0 0 0 1 0"/></filter>`;
+  const blobEls = blobs.map((b, i) =>
+    `<ellipse cx="${b.cx.toFixed(2)}" cy="${b.cy.toFixed(2)}" rx="${b.rx.toFixed(2)}" ry="${b.ry.toFixed(2)}"
+      fill="${b.color}" opacity="${b.op.toFixed(2)}" filter="url(#nbf-${uid}-${i})"
+      class="va-nb-${uid}" id="va-${uid}-nebula-blob-${i}"/>`
+  ).join('');
+  const starCount = 6 + Math.floor(r[35] * 8);
+  let stars = '';
+  for (let i = 0; i < starCount; i++) {
+    const sx = size * (0.05 + r[(i*2+30)%r.length] * 0.90);
+    const sy = size * (0.05 + r[(i*2+31)%r.length] * 0.90);
+    const sR = size * (0.003 + r[(i+36)%r.length] * 0.006);
+    const bright = 70 + Math.floor(r[(i+38)%r.length] * 30);
+    stars += `<circle cx="${sx.toFixed(2)}" cy="${sy.toFixed(2)}" r="${sR.toFixed(2)}" fill="hsl(0,0%,${bright}%)" opacity="${(0.4+r[(i+32)%r.length]*0.6).toFixed(2)}"/>`;
+  }
+  const body = `<rect width="${size}" height="${size}" fill="#0A0A0A"/>
+    <g id="va-${uid}-nebula-blobs" filter="url(#ncb-${uid})">${blobEls}</g>
+    <g id="va-${uid}-nebula-stars">${stars}</g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.35"/>`;
+  return { extraDefs: blobFilters + colorBleed, body };
+}
+
+// ── WIREFRAME ─────────────────────────────────────────────────────────────────
+function wireframe(seed, size, uid, pal) {
+  const r = sr(seed + ':wire', 60);
+  const half = size / 2, radius = size * 0.38;
+  const fH = pal.focal.h;
+  const wc = [`hsl(${fH},100%,60%)`, `hsl(${(fH+160)%360},100%,62%)`, '#e8e8e8'];
+  const tiltX = (r[0] - 0.5) * 0.6, tiltY = r[1] * Math.PI * 2;
+  const lines = [];
+  let li = 0;
+  const latC = 6 + Math.floor(r[2] * 4);
+  for (let i = 1; i < latC; i++) {
+    const phi = Math.PI * i / latC;
+    const rR = radius * Math.sin(phi);
+    const rY = half + radius * Math.cos(phi) * Math.cos(tiltX);
+    const sq = 0.25 + Math.abs(Math.sin(phi + tiltY)) * 0.35;
+    if (rR < 2) continue;
+    const ci = li % wc.length, op = 0.4 + Math.sin(phi) * 0.5;
+    const pLen = (2 * Math.PI * rR * sq).toFixed(1);
+    lines.push(`<ellipse cx="${half}" cy="${rY.toFixed(2)}" rx="${rR.toFixed(2)}" ry="${(rR*sq).toFixed(2)}"
+      fill="none" stroke="${wc[ci]}" stroke-width="1" opacity="${op.toFixed(2)}"
+      stroke-dasharray="${pLen}" stroke-dashoffset="0" data-len="${pLen}"
+      class="va-wl-${uid}" id="va-${uid}-wire-line-${li}"/>`);
+    li++;
+  }
+  const lonC = 8 + Math.floor(r[3] * 4);
+  for (let i = 0; i < lonC; i++) {
+    const theta = Math.PI * 2 * i / lonC + tiltY;
+    const pts = [];
+    for (let j = 0; j <= 24; j++) {
+      const phi = Math.PI * j / 24;
+      const x3 = radius * Math.sin(phi) * Math.cos(theta);
+      const y3 = radius * Math.cos(phi);
+      const z3 = radius * Math.sin(phi) * Math.sin(theta);
+      const rotY = y3 * Math.cos(tiltX) - z3 * Math.sin(tiltX);
+      pts.push(`${(half+x3).toFixed(2)},${(half+rotY).toFixed(2)}`);
+    }
+    const ci = li % wc.length;
+    const aLen = (Math.PI * radius).toFixed(1);
+    lines.push(`<path d="M ${pts.join(' L ')}" fill="none" stroke="${wc[ci]}" stroke-width="1" opacity="0.55"
+      stroke-dasharray="${aLen}" stroke-dashoffset="0" data-len="${aLen}"
+      class="va-wl-${uid}" id="va-${uid}-wire-line-${li}"/>`);
+    li++;
+  }
+  const nC = 8 + Math.floor(r[4] * 10);
+  let nodes = '';
+  for (let i = 0; i < nC; i++) {
+    const phi = r[(i*3+10)%r.length] * Math.PI;
+    const theta = r[(i*3+11)%r.length] * Math.PI * 2 + tiltY;
+    const x3 = radius * Math.sin(phi) * Math.cos(theta);
+    const y3 = radius * Math.cos(phi);
+    const z3 = radius * Math.sin(phi) * Math.sin(theta);
+    const rotY = y3 * Math.cos(tiltX) - z3 * Math.sin(tiltX);
+    const zRot = y3 * Math.sin(tiltX) + z3 * Math.cos(tiltX);
+    if (zRot < 0) continue;
+    const ns = size * 0.02, ci = i % wc.length;
+    nodes += `<rect x="${(half+x3-ns/2).toFixed(2)}" y="${(half+rotY-ns/2).toFixed(2)}" width="${ns.toFixed(2)}" height="${ns.toFixed(2)}" fill="${wc[ci]}" class="va-wn-${uid}"/>`;
+  }
+  const scanF = `<filter id="wsf-${uid}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${(size*0.012).toFixed(2)}" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  const body = `<rect width="${size}" height="${size}" fill="#0A0A0A"/>
+    <g id="va-${uid}-wire-frame" filter="url(#wsf-${uid})">${lines.join('')}</g>
+    <g id="va-${uid}-wire-nodes">${nodes}</g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.30"/>`;
+  return { extraDefs: scanF, body };
+}
+
+// ── CHROMATIC HALFTONE ────────────────────────────────────────────────────────
+function halftone(seed, size, uid, pal) {
+  const r = sr(seed + ':halftone', 120);
+  const cyan = '#00e5ff', magenta = '#ff00aa', yellow = '#ffe600';
+  const cOff = { x: (r[0]-.5)*size*0.025, y: (r[1]-.5)*size*0.025 };
+  const mOff = { x: (r[2]-.5)*size*0.025, y: (r[3]-.5)*size*0.025 };
+  const yOff = { x: (r[4]-.5)*size*0.025, y: (r[5]-.5)*size*0.025 };
+  function noiseAt(x, y, o) { return r[Math.abs(Math.floor(x*7+y*13+o*37)) % r.length]; }
+  function clumpN(nx, ny) { return noiseAt(nx,ny,0)*0.65+noiseAt(nx*2.3,ny*2.3,1)*0.35; }
+  const step = Math.max(3, Math.floor(size/16));
+  const cols = Math.ceil(size/step)+1, rows = Math.ceil(size/step)+1;
+  const gcx = size*(0.30+r[6]*0.40), gcy = size*(0.30+r[7]*0.40), maxD = size*0.72;
+  function genLayer(color, offset, li) {
+    let dots = '', di = 0;
+    for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
+      const ri = (li*400+row*cols+col) % r.length;
+      const cx = col*step+(r[ri]-.5)*step*0.25, cy = row*step+(r[(ri+1)%r.length]-.5)*step*0.25;
+      const noise = clumpN(col/cols, row/rows);
+      const dist = Math.hypot(cx-gcx, cy-gcy), nd = Math.min(1, dist/maxD);
+      if (noise < 0.25+nd*0.35) continue;
+      const dotR = (step*0.42-nd*(step*0.42-step*0.06))*(0.6+noise*0.5);
+      if (dotR < 0.3) continue;
+      dots += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${dotR.toFixed(2)}" fill="${color}" opacity="${(0.55+noise*0.40).toFixed(2)}" class="va-hd-${uid}" id="va-${uid}-ht-dot-${li*1000+di}"/>`;
+      di++;
+    }
+    return dots;
+  }
+  const glowF = `<filter id="htglow-${uid}" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+    <feGaussianBlur stdDeviation="${(size*0.008).toFixed(2)}" result="b"/>
+    <feColorMatrix type="matrix" in="b" values="1.6 0.1 0 0 0.05  0 1.5 0.1 0 0.03  0.1 0 1.7 0 0.05  0 0 0 1 0" result="glow"/>
+    <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  const body = `<rect width="${size}" height="${size}" fill="#000"/>
+    <g id="va-${uid}-ht-dots" filter="url(#htglow-${uid})">
+      <g id="va-${uid}-ht-cyan" transform="translate(${cOff.x.toFixed(2)},${cOff.y.toFixed(2)})" style="mix-blend-mode:screen">${genLayer(cyan,cOff,0)}</g>
+      <g id="va-${uid}-ht-magenta" transform="translate(${mOff.x.toFixed(2)},${mOff.y.toFixed(2)})" style="mix-blend-mode:screen">${genLayer(magenta,mOff,1)}</g>
+      <g id="va-${uid}-ht-yellow" transform="translate(${yOff.x.toFixed(2)},${yOff.y.toFixed(2)})" style="mix-blend-mode:screen">${genLayer(yellow,yOff,2)}</g>
+    </g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.25"/>`;
+  return { extraDefs: glowF, body };
+}
+
+// ── ISOMETRIC ─────────────────────────────────────────────────────────────────
+function isometric(seed, size, uid, pal) {
+  const r = sr(seed + ':iso', 60);
+  const half = size / 2;
+  const cs = size * 0.14;
+  const cubeCount = 3 + Math.floor(r[0] * 5);
+  const IC = Math.cos(Math.PI / 6), IS = Math.sin(Math.PI / 6);
+  function isoP(gx, gy, gz) { return { x: half + (gx - gz) * IC * cs, y: half + (gx + gz) * IS * cs - gy * cs }; }
+  function buildCube(gx, gy, gz, bc, opacity, idx) {
+    const o = isoP(gx, gy, gz), w = cs * IC, h = cs * IS, ch = cs;
+    const top = hsl(bc.h, bc.s, Math.min(90, bc.l + 18), opacity);
+    const left = hsl(bc.h, bc.s, Math.max(10, bc.l - 8), opacity);
+    const right = hsl(bc.h, bc.s, Math.max(5, bc.l - 16), opacity);
+    const topP = `M ${o.x},${o.y-ch} L ${o.x+w},${o.y-ch+h} L ${o.x},${o.y} L ${o.x-w},${o.y-ch+h} Z`;
+    const leftP = `M ${o.x-w},${o.y-ch+h} L ${o.x},${o.y} L ${o.x},${o.y+ch} L ${o.x-w},${o.y+h} Z`;
+    const rightP = `M ${o.x},${o.y} L ${o.x+w},${o.y-ch+h} L ${o.x+w},${o.y+h} L ${o.x},${o.y+ch} Z`;
+    const stroke = hsl(bc.h, bc.s, bc.l, 0.15);
+    return `<g class="va-ic-${uid}" id="va-${uid}-iso-cube-${idx}" data-gx="${gx}" data-gy="${gy}" data-gz="${gz}">
+      <path d="${topP}" fill="${top}"/><path d="${leftP}" fill="${left}"/><path d="${rightP}" fill="${right}"/>
+      <path d="${topP}" fill="none" stroke="${stroke}" stroke-width="0.5"/>
+      <path d="${leftP}" fill="none" stroke="${stroke}" stroke-width="0.5"/>
+      <path d="${rightP}" fill="none" stroke="${stroke}" stroke-width="0.5"/></g>`;
+  }
+  const cubes = [];
+  for (let i = 0; i < cubeCount; i++) {
+    const gx = Math.floor(r[(i*3+5)%r.length] * 3) - 1;
+    const gz = Math.floor(r[(i*3+6)%r.length] * 3) - 1;
+    const below = cubes.filter(c => c.gx === gx && c.gz === gz).length;
+    cubes.push({ gx, gy: below, gz, ci: i % pal.colors.length, ghost: r[(i*3+7)%r.length] > 0.75 });
+  }
+  cubes.sort((a, b) => (a.gx + a.gz - a.gy) - (b.gx + b.gz - b.gy));
+  const cubeEls = cubes.map((c, i) => buildCube(c.gx, c.gy, c.gz, pal.colors[c.ci], c.ghost ? 0.38 : 0.92, i)).join('');
+  const shadows = cubes.filter(c => c.gy === 0).map(c => {
+    const p = isoP(c.gx, -0.1, c.gz);
+    return `<ellipse cx="${p.x.toFixed(2)}" cy="${(p.y+cs).toFixed(2)}" rx="${(cs*IC*1.2).toFixed(2)}" ry="${(cs*IS*0.4).toFixed(2)}" fill="#000" opacity="0.18"/>`;
+  }).join('');
+  const body = `<rect width="${size}" height="${size}" fill="#0E0E12"/>
+    <g id="va-${uid}-iso-shadow">${shadows}</g>
+    <g id="va-${uid}-iso-stack">${cubeEls}</g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.30"/>`;
+  return { extraDefs: '', body };
+}
+
+// ── SPECTRUM ──────────────────────────────────────────────────────────────────
+function spectrum(seed, size, uid, pal) {
+  const r = sr(seed + ':spectrum', 60);
+  const barCount = 12 + Math.floor(r[0] * 5);
+  function noiseH(i) {
+    const t = i / barCount;
+    const n1 = Math.sin(t*Math.PI*2*(1.5+r[1]*2))*0.4;
+    const n2 = Math.sin(t*Math.PI*2*(3+r[2]*3)+r[3]*Math.PI)*0.25;
+    const n3 = Math.sin(t*Math.PI*2*(6+r[4]*4)+r[5]*Math.PI)*0.15;
+    return Math.max(0.12, Math.min(0.95, 0.3+r[(i+10)%r.length]*0.2+n1+n2+n3));
+  }
+  const tw = size*0.82, gap = tw*0.02, bw = (tw-gap*(barCount-1))/barCount;
+  const sx = (size-tw)/2, baseY = size*0.88;
+  const grads = Array.from({length:barCount}, (_,i) => {
+    const hs = (i/barCount)*60;
+    const tH = (pal.focal.h+hs)%360, bH = (pal.colors[2].h+hs*0.5)%360;
+    return `<linearGradient id="sg-${uid}-${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="hsl(${tH|0},100%,65%)"/><stop offset="100%" stop-color="hsl(${bH|0},${pal.colors[2].s}%,${pal.colors[2].l}%)"/></linearGradient>`;
+  }).join('');
+  const sgf = `<filter id="sgf-${uid}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${(size*0.012).toFixed(2)}" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  let bars = '', refl = '';
+  for (let i = 0; i < barCount; i++) {
+    const h = noiseH(i)*size*0.72, x = sx+i*(bw+gap), y = baseY-h, rx = bw*0.25;
+    bars += `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${bw.toFixed(2)}" height="${h.toFixed(2)}" rx="${rx.toFixed(2)}" fill="url(#sg-${uid}-${i})" class="va-sb-${uid}" id="va-${uid}-spec-bar-${i}" data-base-height="${h.toFixed(2)}" data-base-y="${y.toFixed(2)}"/>`;
+    refl += `<rect x="${x.toFixed(2)}" y="${baseY.toFixed(2)}" width="${bw.toFixed(2)}" height="${(h*0.25).toFixed(2)}" rx="${rx.toFixed(2)}" fill="url(#sg-${uid}-${i})" opacity="0.15"/>`;
+  }
+  const body = `<rect width="${size}" height="${size}" fill="#070710"/>
+    <line x1="${sx}" y1="${baseY}" x2="${sx+tw}" y2="${baseY}" stroke="${hsl(pal.focal.h,pal.focal.s,pal.focal.l,0.15)}" stroke-width="${(size*0.01).toFixed(2)}"/>
+    <g id="va-${uid}-spectrum-bars" filter="url(#sgf-${uid})">${bars}</g>
+    <g id="va-${uid}-spectrum-glow" opacity="0.4">${refl}</g>
+    <rect width="${size}" height="${size}" fill="transparent" filter="url(#grf-${uid})" opacity="0.25"/>`;
+  return { extraDefs: grads + sgf, body };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN GENERATOR
+// ═══════════════════════════════════════════════════════════════════════════════
+const STYLES = ['marble', 'beam', 'bauhaus', 'pixel', 'ring', 'glitch', 'constellation', 'emoticon', 'nebula', 'wireframe', 'halftone', 'isometric', 'spectrum'];
+const MOODS  = ['none', 'happy', 'sad', 'angry', 'calm', 'chaotic'];
+const ANIMS  = ['none', 'float', 'morph', 'glimmer'];
+
+function generateAvatar({ seed, style, mood='none', anim='none', size=40, radius=0.22 }) {
+  const st   = (!style || style === 'auto') ? STYLES[hashStr(seed) % STYLES.length] : style;
+  const uid  = (hashStr(seed + ':' + st + ':' + mood) >>> 0).toString(36);
+  const pal  = buildPalette(seed);
+  const fHex = hslToHex(pal.focal.h, pal.focal.s, pal.focal.l);
+  const rx   = size * Math.max(0, Math.min(0.5, radius));
+
+  const doMorph = anim === 'morph';
+  const animData = buildAnimData(anim, uid, size);
+
+  let result;
+  switch (st) {
+    case 'marble':        result = marble(seed, size, uid, pal);        break;
+    case 'beam':          result = beam(seed, size, uid, pal);          break;
+    case 'bauhaus':       result = bauhaus(seed, size, uid, pal);       break;
+    case 'pixel':         result = pixel(seed, size, uid, pal);         break;
+    case 'ring':          result = ring(seed, size, uid, pal);          break;
+    case 'glitch':        result = glitch(seed, size, uid, pal);        break;
+    case 'constellation': result = constellation(seed, size, uid, pal); break;
+    case 'emoticon':      result = emoticon(seed, size, uid, pal);      break;
+    case 'nebula':        result = nebula(seed, size, uid, pal);       break;
+    case 'wireframe':     result = wireframe(seed, size, uid, pal);    break;
+    case 'halftone':      result = halftone(seed, size, uid, pal);     break;
+    case 'isometric':     result = isometric(seed, size, uid, pal);    break;
+    case 'spectrum':      result = spectrum(seed, size, uid, pal);     break;
+    default:              result = bauhaus(seed, size, uid, pal);
+  }
+
+  const moodEl = getMoodEl(mood, st, size, pal);
+
+  // Void Edge — subtle post-processing: slight blur + vibrance boost
+  const vedge = `<filter id="vedge-${uid}" x="-2%" y="-2%" width="104%" height="104%" color-interpolation-filters="sRGB">
+    <feGaussianBlur stdDeviation="${(size*0.004).toFixed(3)}" result="s"/>
+    <feComponentTransfer in="s" result="v"><feFuncR type="linear" slope="1.10" intercept="-0.02"/><feFuncG type="linear" slope="1.10" intercept="-0.02"/><feFuncB type="linear" slope="1.10" intercept="-0.02"/></feComponentTransfer></filter>`;
+
+  // Golden Seed — Void hallmark
+  const sigHash = hashStr(seed + ':sig');
+  const sigTR = (sigHash & 1) === 0;
+  const sigX = sigTR ? size*0.86 : size*0.14, sigY = sigTR ? size*0.14 : size*0.86;
+  const sigR = Math.max(1, size*0.022);
+  const gseedF = `<filter id="gseed-${uid}" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="${(sigR*0.9).toFixed(2)}" result="g"/><feFlood flood-color="#fff" flood-opacity="0.7" result="w"/><feComposite in="w" in2="g" operator="in" result="wg"/><feMerge><feMergeNode in="wg"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  const gseedEl = `<circle cx="${sigX}" cy="${sigY}" r="${sigR}" fill="#FFD700" filter="url(#gseed-${uid})" opacity="0.85"/>`;
+
+  const allDefs = [
+    `<clipPath id="c-${uid}"><rect width="${size}" height="${size}" rx="${rx}"/></clipPath>`,
+    animData.styleDef ? `<style>${animData.styleDef}</style>` : '',
+    filterDefs(uid, size, fHex, mood, doMorph),
+    result.extraDefs,
+    animData.extraDefs,
+    vedge,
+    gseedF,
+  ].filter(Boolean).join('\n  ');
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" role="img" aria-label="${seed.replace(/"/g,'&quot;')}">
+  <defs>${allDefs}</defs>
+  <g clip-path="url(#c-${uid})" filter="url(#vedge-${uid})">
+    ${animData.wrapOpen}${result.body}${moodEl}${animData.overlay}${animData.wrapClose}
+    ${gseedEl}
+  </g>
+</svg>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GSAP SHOWCASE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function setupGsapShowcase() {
+  if (!gsap) { console.warn('GSAP not loaded'); return; }
+
+  const SIZE = 130;
+
+  // ── 1. SUPERNOVA (Marble) — hover ──────────────────────────────────────────
+  const supernovaContainer = document.getElementById('av-supernova');
+  const supernova_seed = 'nova-prime';
+  const supernova_style = 'marble';
+  supernovaContainer.innerHTML = generateAvatar({ seed: supernova_seed, style: supernova_style, size: SIZE, radius: 0.5 });
+
+  const svgEl = supernovaContainer.querySelector('svg');
+  // uid for this specific avatar
+  const suid = (hashStr(supernova_seed + ':' + supernova_style + ':none') >>> 0).toString(36);
+
+  const marbleCore = svgEl.querySelector(`#va-${suid}-marble-core`);
+  const turb       = svgEl.querySelector(`#va-${suid}-turb`);
+  const disp       = svgEl.querySelector(`#va-${suid}-disp`);
+  const origScale  = parseFloat(disp?.getAttribute('scale') || SIZE * 0.12);
+
+  // Build a master timeline, play on hover, reverse on leave
+  let supernovaTl = null;
+
+  const cardSupernova = document.getElementById('card-supernova');
+  cardSupernova.addEventListener('mouseenter', () => {
+    if (supernovaTl) supernovaTl.kill();
+    supernovaTl = gsap.timeline();
+
+    // Scale up the marble core
+    if (marbleCore) {
+      supernovaTl.to(marbleCore, {
+        attr: { transform: `scale(1.22)` },
+        svgOrigin: `${SIZE/2} ${SIZE/2}`,
+        duration: 0.5,
+        ease: 'elastic.out(1, 0.55)',
+      }, 0);
+    }
+
+    // Rapidly crank up displacement scale → explosion warp
+    if (disp) {
+      supernovaTl.to(disp, {
+        attr: { scale: origScale * 3.8 },
+        duration: 0.7,
+        ease: 'power3.out',
+      }, 0);
+    }
+
+    // Animate turbulence seed for swirl effect
+    if (turb) {
+      const seedProxy = { value: 1 };
+      supernovaTl.to(seedProxy, {
+        value: 80,
+        duration: 0.8,
+        ease: 'none',
+        onUpdate() { turb.setAttribute('seed', Math.round(seedProxy.value)); },
+      }, 0);
+    }
+
+    // Flash the focal glow color
+    const focalCircle = svgEl.querySelector(`circle[filter*="glf"]`);
+    if (focalCircle) {
+      supernovaTl.to(focalCircle, { attr: { r: SIZE * 0.22 }, duration: 0.4, ease: 'power2.out' }, 0)
+                 .to(focalCircle, { attr: { r: SIZE * 0.09 }, duration: 0.6, ease: 'elastic.out(1,0.4)' });
+    }
+  });
+
+  cardSupernova.addEventListener('mouseleave', () => {
+    if (supernovaTl) supernovaTl.kill();
+    supernovaTl = gsap.timeline();
+    if (marbleCore) gsap.to(marbleCore, { attr: { transform: 'scale(1)' }, duration: 0.7, ease: 'elastic.out(1, 0.4)' });
+    if (disp)       gsap.to(disp, { attr: { scale: origScale }, duration: 0.8, ease: 'power2.inOut' });
+    if (turb) {
+      const seedProxy = { value: 80 };
+      gsap.to(seedProxy, { value: 1, duration: 0.6, ease: 'power2.inOut', onUpdate() { turb.setAttribute('seed', Math.round(seedProxy.value)); } });
+    }
+    const focalCircle = svgEl.querySelector(`circle[filter*="glf"]`);
+    if (focalCircle) gsap.to(focalCircle, { attr: { r: SIZE * 0.09 }, duration: 0.5, ease: 'elastic.out(1,0.4)' });
+  });
+
+  // ── 2. BINARY RAIN (Glitch) — continuous ───────────────────────────────────
+  const rainContainer = document.getElementById('av-rain');
+  const rain_seed = 'rain-code-99';
+  rainContainer.innerHTML = generateAvatar({ seed: rain_seed, style: 'glitch', size: SIZE, radius: 0.15 });
+
+  const rain_suid = (hashStr(rain_seed + ':glitch:none') >>> 0).toString(36);
+  const glitchCells = rainContainer.querySelectorAll(`.va-pxc-${rain_suid}`);
+
+  if (glitchCells.length > 0) {
+    gsap.fromTo(glitchCells,
+      { y: 0, opacity: 1 },
+      {
+        y: SIZE / 16 * 1.5,
+        opacity: 0,
+        duration: 0.65,
+        stagger: { amount: 2.2, from: 'random', ease: 'none' },
+        ease: 'power2.in',
+        repeat: -1,
+        repeatDelay: 0.3,
+        yoyo: false,
+      }
+    );
+  }
+
+  // Also animate the slice groups for glitch flicker
+  const sliceGroup = rainContainer.querySelector(`#va-${rain_suid}-glitch-slices`);
+  if (sliceGroup) {
+    gsap.to(sliceGroup, {
+      attr: { opacity: 0.3 },
+      duration: 0.08,
+      repeat: -1,
+      repeatDelay: 1.2 + Math.random() * 2,
+      yoyo: true,
+      ease: 'none',
+    });
+    gsap.to(sliceGroup, {
+      x: () => (Math.random() - 0.5) * SIZE * 0.08,
+      duration: 0.06,
+      repeat: -1,
+      repeatDelay: 1.4 + Math.random() * 3,
+      yoyo: true,
+      ease: 'none',
+    });
+  }
+
+  // ── 3. BREATHING CONSTELLATION — continuous ────────────────────────────────
+  const constContainer = document.getElementById('av-constellation');
+  const const_seed = 'starmap-7';
+  constContainer.innerHTML = generateAvatar({ seed: const_seed, style: 'constellation', size: SIZE, radius: 0.22 });
+
+  const const_uid = (hashStr(const_seed + ':constellation:none') >>> 0).toString(36);
+  const constLines = constContainer.querySelectorAll(`.va-cl-${const_uid}`);
+  const constNodes = constContainer.querySelectorAll(`.va-cn-${const_uid}`);
+
+  constLines.forEach((line, i) => {
+    const len = parseFloat(line.dataset.len || '30');
+    line.setAttribute('stroke-dasharray', len);
+    line.setAttribute('stroke-dashoffset', len); // start hidden
+
+    gsap.to(line, {
+      attr: { 'stroke-dashoffset': 0 },
+      duration: 1.8 + (i % 5) * 0.4,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: i * 0.18,
+    });
+  });
+
+  constNodes.forEach((node, i) => {
+    gsap.to(node, {
+      opacity: 0.25 + Math.random() * 0.2,
+      duration: 1.4 + (i % 7) * 0.35,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: i * 0.22,
+    });
+    // Subtle scale pulse on the main circle inside the group
+    const mainCircle = node.querySelector('circle:last-child');
+    if (mainCircle) {
+      gsap.to(mainCircle, {
+        attr: { r: parseFloat(mainCircle.getAttribute('r') || '3') * 1.5 },
+        duration: 2 + (i % 4) * 0.6,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+        delay: i * 0.15 + 0.5,
+      });
+    }
+  });
+
+  // ── 4. RESPONSIVE SMILE (Emoticon) — click ────────────────────────────────
+  const smileContainer = document.getElementById('av-smile');
+  const smile_seed = 'alice';
+  smileContainer.innerHTML = generateAvatar({ seed: smile_seed, style: 'emoticon', size: SIZE, radius: 0.5 });
+
+  const smile_uid = (hashStr(smile_seed + ':emoticon:none') >>> 0).toString(36);
+  const mouthPath = smileContainer.querySelector(`#va-${smile_uid}-mouth-path`);
+
+  if (mouthPath && gsap) {
+    const smH = SIZE / 2;
+    const mouthY = smH + SIZE * 0.11;
+    const mouthW = SIZE * 0.20;
+
+    // State object — interpolate cx, cy of the Q control point
+    const state = { cx: smH, cy: mouthY + mouthW * 0.65 }; // happy
+    const updateMouth = () => {
+      mouthPath.setAttribute('d',
+        `M ${smH - mouthW} ${mouthY} Q ${state.cx.toFixed(2)} ${state.cy.toFixed(2)} ${smH + mouthW} ${mouthY}`);
+    };
+
+    let smileTl = null;
+    let isAnimating = false;
+
+    smileContainer.style.cursor = 'pointer';
+    smileContainer.addEventListener('click', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+      if (smileTl) smileTl.kill();
+
+      smileTl = gsap.timeline({ onComplete: () => { isAnimating = false; } });
+      // Smile → neutral (flatten)
+      smileTl.to(state, { cx: smH, cy: mouthY, duration: 0.32, ease: 'power2.inOut', onUpdate: updateMouth });
+      // Eyes blink
+      const eyes = smileContainer.querySelector(`#va-${smile_uid}-eyes`);
+      if (eyes) {
+        smileTl.to(eyes, { scaleY: 0.08, duration: 0.08, ease: 'power2.in', svgOrigin: `${smH} ${smH}` }, '<0.1');
+        smileTl.to(eyes, { scaleY: 1, duration: 0.12, ease: 'power2.out' });
+      }
+      // Neutral → confused (asymmetric control point)
+      smileTl.to(state, {
+        cx: smH + mouthW * 0.55,
+        cy: mouthY - mouthW * 0.4,
+        duration: 0.28,
+        ease: 'elastic.out(1, 0.6)',
+        onUpdate: updateMouth,
+      });
+      // Hold confused
+      smileTl.to({}, { duration: 0.5 });
+      // Confused → smile (back home, spring)
+      smileTl.to(state, {
+        cx: smH,
+        cy: mouthY + mouthW * 0.65,
+        duration: 0.55,
+        ease: 'elastic.out(1, 0.45)',
+        onUpdate: updateMouth,
+      });
+    });
+  }
+
+  // ── 5. NEBULA "THE DRIFT" — continuous blob float ──────────────────────────
+  const nebulaContainer = document.getElementById('av-nebula');
+  const nebula_seed = 'deepspace-3';
+  nebulaContainer.innerHTML = generateAvatar({ seed: nebula_seed, style: 'nebula', size: SIZE, radius: 0.22 });
+
+  const nebula_uid = (hashStr(nebula_seed + ':nebula:none') >>> 0).toString(36);
+  const nebulaBlobs = nebulaContainer.querySelectorAll(`.va-nb-${nebula_uid}`);
+
+  nebulaBlobs.forEach((blob, i) => {
+    const cx = parseFloat(blob.getAttribute('cx'));
+    const cy = parseFloat(blob.getAttribute('cy'));
+    const drift = SIZE * 0.06;
+    // Randomized floating loop — looks like a lava lamp
+    gsap.to(blob, {
+      attr: { cx: cx + (Math.random() - 0.5) * drift * 2, cy: cy + (Math.random() - 0.5) * drift * 2 },
+      duration: 3.5 + i * 0.8,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: i * 0.4,
+    });
+    // Subtle opacity pulse
+    gsap.to(blob, {
+      attr: { opacity: parseFloat(blob.getAttribute('opacity')) * 0.6 },
+      duration: 2.5 + i * 0.6,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: i * 0.3 + 0.5,
+    });
+  });
+
+  // ── 6. WIREFRAME "THE SCAN" — stroke-dashoffset render effect ──────────────
+  const wireContainer = document.getElementById('av-wireframe');
+  const wire_seed = 'cybercore-5';
+  wireContainer.innerHTML = generateAvatar({ seed: wire_seed, style: 'wireframe', size: SIZE, radius: 0.22 });
+
+  const wire_uid = (hashStr(wire_seed + ':wireframe:none') >>> 0).toString(36);
+  const wireLines = wireContainer.querySelectorAll(`.va-wl-${wire_uid}`);
+
+  wireLines.forEach((line, i) => {
+    const len = parseFloat(line.dataset.len || '50');
+    line.setAttribute('stroke-dasharray', len);
+    line.setAttribute('stroke-dashoffset', len); // start hidden
+    // Stagger scan-in effect
+    gsap.to(line, {
+      attr: { 'stroke-dashoffset': 0 },
+      duration: 1.5 + (i % 4) * 0.3,
+      repeat: -1,
+      yoyo: true,
+      ease: 'power1.inOut',
+      delay: i * 0.12,
+    });
+  });
+
+  // Glitch nodes blink
+  const wireNodes = wireContainer.querySelectorAll(`.va-wn-${wire_uid}`);
+  wireNodes.forEach((node, i) => {
+    gsap.to(node, {
+      opacity: 0,
+      duration: 0.08,
+      repeat: -1,
+      repeatDelay: 0.8 + Math.random() * 2,
+      yoyo: true,
+      ease: 'none',
+      delay: i * 0.15,
+    });
+  });
+
+  // ── 7. HALFTONE "THE PULSE" — dot radius sine wave ─────────────────────────
+  const htContainer = document.getElementById('av-halftone');
+  const ht_seed = 'retropop-2';
+  htContainer.innerHTML = generateAvatar({ seed: ht_seed, style: 'halftone', size: SIZE, radius: 0.22 });
+
+  const ht_uid = (hashStr(ht_seed + ':halftone:none') >>> 0).toString(36);
+  const htDots = htContainer.querySelectorAll(`.va-hd-${ht_uid}`);
+
+  // Breathing pulse — radius modulation based on sine wave
+  htDots.forEach((dot, i) => {
+    const baseR = parseFloat(dot.getAttribute('r'));
+    gsap.to(dot, {
+      attr: { r: baseR * 1.4 },
+      duration: 1.2 + (i % 8) * 0.15,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: (i % 20) * 0.06,
+    });
+  });
+
+  // ── 8. ISOMETRIC "THE ASSEMBLER" — click to assemble ───────────────────────
+  const isoContainer = document.getElementById('av-isometric');
+  const iso_seed = 'voxel-9';
+  isoContainer.innerHTML = generateAvatar({ seed: iso_seed, style: 'isometric', size: SIZE, radius: 0.22 });
+
+  const iso_uid = (hashStr(iso_seed + ':isometric:none') >>> 0).toString(36);
+  const isoCubes = isoContainer.querySelectorAll(`.va-ic-${iso_uid}`);
+
+  // Initial state — cubes scattered off-screen
+  function scatterCubes() {
+    isoCubes.forEach((cube, i) => {
+      const angle = (i / isoCubes.length) * Math.PI * 2;
+      const dist = SIZE * 0.8;
+      gsap.set(cube, {
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist - SIZE * 0.5,
+        opacity: 0,
+        scale: 0.3,
+      });
+    });
+  }
+
+  function assembleCubes() {
+    isoCubes.forEach((cube, i) => {
+      gsap.to(cube, {
+        x: 0, y: 0, opacity: 1, scale: 1,
+        duration: 0.6,
+        ease: 'back.out(1.7)',
+        delay: i * 0.08,
+      });
+    });
+  }
+
+  // Auto-assemble on load
+  scatterCubes();
+  assembleCubes();
+
+  // Click to re-assemble
+  isoContainer.style.cursor = 'pointer';
+  isoContainer.addEventListener('click', () => {
+    scatterCubes();
+    setTimeout(assembleCubes, 200);
+  });
+
+  // ── 9. SPECTRUM "THE BOUNCE" — continuous + hover peak ─────────────────────
+  const specContainer = document.getElementById('av-spectrum');
+  const spec_seed = 'audiowave-4';
+  specContainer.innerHTML = generateAvatar({ seed: spec_seed, style: 'spectrum', size: SIZE, radius: 0.22 });
+
+  const spec_uid = (hashStr(spec_seed + ':spectrum:none') >>> 0).toString(36);
+  const specBars = specContainer.querySelectorAll(`.va-sb-${spec_uid}`);
+
+  // Continuous bounce — staggered scaleY with random targets
+  let specTweens = [];
+  specBars.forEach((bar, i) => {
+    const baseH = parseFloat(bar.dataset.baseHeight || '30');
+    const baseY = parseFloat(bar.dataset.baseY || '50');
+    const tween = gsap.to(bar, {
+      attr: {
+        height: baseH * (0.3 + Math.random() * 0.7),
+        y: baseY + baseH * (0.3 + Math.random() * 0.3),
+      },
+      duration: 0.25 + Math.random() * 0.2,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: i * 0.04,
+    });
+    specTweens.push(tween);
+  });
+
+  // Hover → increase bounce frequency (high-decibel peak)
+  const cardSpectrum = document.getElementById('card-spectrum');
+  cardSpectrum.addEventListener('mouseenter', () => {
+    specTweens.forEach(tw => tw.timeScale(3.5));
+  });
+  cardSpectrum.addEventListener('mouseleave', () => {
+    specTweens.forEach(tw => tw.timeScale(1));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════════════════════════════════
+const seedInput    = document.getElementById('seedInput');
+const sizeRange    = document.getElementById('sizeRange');
+const sizeVal      = document.getElementById('sizeVal');
+const radiusSel    = document.getElementById('radiusSelect');
+const randomBtn    = document.getElementById('randomBtn');
+const copyBtn      = document.getElementById('copyBtn');
+const previewEl    = document.getElementById('previewSvg');
+const previewSeed  = document.getElementById('previewSeed');
+const previewStyle = document.getElementById('previewStyle');
+const previewCode  = document.getElementById('previewCode');
+const gallery      = document.getElementById('gallery');
+const moodGallery  = document.getElementById('moodGallery');
+const motionGallery= document.getElementById('motionGallery');
+const toast        = document.getElementById('toast');
+const moodPill     = document.getElementById('moodPill');
+const animPill     = document.getElementById('animPill');
+
+let currentStyle = 'auto', currentMood = 'none', currentAnim = 'none';
+
+document.getElementById('styleTabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab'); if (!t) return;
+  document.querySelectorAll('#styleTabs .tab').forEach(b => b.classList.remove('active'));
+  t.classList.add('active'); currentStyle = t.dataset.style; render();
+});
+document.getElementById('moodTabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab'); if (!t) return;
+  document.querySelectorAll('#moodTabs .tab').forEach(b => b.classList.remove('active'));
+  t.classList.add('active'); currentMood = t.dataset.mood; render();
+});
+document.getElementById('animTabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab'); if (!t) return;
+  document.querySelectorAll('#animTabs .tab').forEach(b => b.classList.remove('active'));
+  t.classList.add('active'); currentAnim = t.dataset.anim; render();
+});
+
+function getOpts() {
+  return { seed: seedInput.value||'void', style: currentStyle==='auto'?undefined:currentStyle, mood: currentMood, anim: currentAnim, size: +sizeRange.value, radius: +radiusSel.value };
+}
+
+function render() {
+  const opts = getOpts();
+  sizeVal.textContent = opts.size + 'px';
+  previewEl.innerHTML = generateAvatar(opts);
+  previewSeed.textContent = opts.seed;
+  const st = opts.style ?? STYLES[hashStr(opts.seed) % STYLES.length];
+  previewStyle.textContent = `Style: ${st} · Size: ${opts.size}px`;
+  moodPill.style.display = opts.mood && opts.mood !== 'none' ? 'inline-flex' : 'none';
+  if (opts.mood !== 'none') moodPill.textContent = opts.mood;
+  animPill.style.display = opts.anim && opts.anim !== 'none' ? 'inline-flex' : 'none';
+  if (opts.anim !== 'none') animPill.textContent = '▶ ' + opts.anim;
+  previewCode.textContent = `generateAvatar({\n  seed: "${opts.seed}",\n  style: "${st}",`
+    + (opts.mood !== 'none' ? `\n  mood: "${opts.mood}",` : '')
+    + (opts.anim !== 'none' ? `\n  anim: "${opts.anim}",` : '')
+    + `\n  size: ${opts.size}\n})`;
+}
+
+function buildGallery() {
+  const seeds = ['alice','bob','void','specter','glitch','ember','nova','pulse'];
+  gallery.innerHTML = '';
+  STYLES.forEach(style => {
+    const lbl = document.createElement('div');
+    lbl.className = 'group-label style-gl'; lbl.textContent = style;
+    gallery.appendChild(lbl);
+    seeds.forEach(seed => {
+      const card = document.createElement('div');
+      card.className = 'avatar-card';
+      card.innerHTML = generateAvatar({ seed, style, size: 68, radius: 0.22 });
+      const sl = document.createElement('span'); sl.className = 'seed-label'; sl.textContent = seed;
+      card.appendChild(sl);
+      card.addEventListener('click', () => {
+        seedInput.value = seed;
+        document.querySelectorAll('#styleTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`#styleTabs .tab[data-style="${style}"]`).classList.add('active');
+        currentStyle = style; render();
+      });
+      gallery.appendChild(card);
+    });
+  });
+}
+
+function buildMoodGallery() {
+  const seeds = ['alice','void','ember','nova'];
+  moodGallery.innerHTML = '';
+  MOODS.slice(1).forEach(mood => {
+    const lbl = document.createElement('div'); lbl.className = 'group-label mood-gl'; lbl.textContent = mood;
+    moodGallery.appendChild(lbl);
+    ['bauhaus','emoticon','constellation','nebula','wireframe','halftone','isometric','spectrum'].forEach(style => {
+      seeds.forEach(seed => {
+        const card = document.createElement('div'); card.className = 'avatar-card';
+        card.innerHTML = generateAvatar({ seed, style, mood, size: 68, radius: 0.22 });
+        const sl = document.createElement('span'); sl.className = 'seed-label'; sl.textContent = seed;
+        const ml = document.createElement('span'); ml.className = 'sub-label style-l'; ml.textContent = style;
+        card.appendChild(sl); card.appendChild(ml);
+        card.addEventListener('click', () => {
+          seedInput.value = seed;
+          document.querySelectorAll('#styleTabs .tab').forEach(t => t.classList.remove('active'));
+          document.querySelector(`#styleTabs .tab[data-style="${style}"]`).classList.add('active');
+          document.querySelectorAll('#moodTabs .tab').forEach(t => t.classList.remove('active'));
+          document.querySelector(`#moodTabs .tab[data-mood="${mood}"]`).classList.add('active');
+          currentStyle = style; currentMood = mood; render();
+        });
+        moodGallery.appendChild(card);
+      });
+    });
+  });
+}
+
+function buildMotionGallery() {
+  const seeds = ['alice','void','ember','nova','glitch','pulse'];
+  const styleMap = { float:'bauhaus', morph:'marble', glimmer:'beam' };
+  motionGallery.innerHTML = '';
+  ANIMS.slice(1).forEach(anim => {
+    const style = styleMap[anim];
+    const lbl = document.createElement('div'); lbl.className = 'group-label anim-gl'; lbl.textContent = `${anim} — ${style}`;
+    motionGallery.appendChild(lbl);
+    seeds.forEach(seed => {
+      const card = document.createElement('div'); card.className = 'avatar-card';
+      card.innerHTML = generateAvatar({ seed, style, anim, size: 68, radius: 0.22 });
+      const sl = document.createElement('span'); sl.className = 'seed-label'; sl.textContent = seed;
+      const al = document.createElement('span'); al.className = 'sub-label anim-l'; al.textContent = anim;
+      card.appendChild(sl); card.appendChild(al);
+      card.addEventListener('click', () => {
+        seedInput.value = seed;
+        document.querySelectorAll('#styleTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`#styleTabs .tab[data-style="${style}"]`).classList.add('active');
+        document.querySelectorAll('#animTabs .tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`#animTabs .tab[data-anim="${anim}"]`).classList.add('active');
+        currentStyle = style; currentAnim = anim; render();
+      });
+      motionGallery.appendChild(card);
+    });
+  });
+}
+
+function showToast(msg) { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000); }
+
+copyBtn.addEventListener('click', () => navigator.clipboard.writeText(generateAvatar(getOpts())).then(() => showToast('SVG copied!')));
+randomBtn.addEventListener('click', () => {
+  const w = ['cosmic','void','echo','neon','fractal','glitch','pulse','bloom','rift','ember','nova','warp'];
+  seedInput.value = w[Math.floor(Math.random()*w.length)] + '-' + Math.floor(Math.random()*9999);
+  render();
+});
+seedInput.addEventListener('input', render);
+sizeRange.addEventListener('input', render);
+radiusSel.addEventListener('change', render);
+
+render();
+buildGallery();
+buildMoodGallery();
+buildMotionGallery();
+setupGsapShowcase();
+</script>
+</body>
+</html>
