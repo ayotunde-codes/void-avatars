@@ -1,5 +1,6 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/demo/index.html" }],
+  "buildCommand": null,
+  "outputDirectory": "demo",
   "headers": [
     {
       "source": "/(.*)",
